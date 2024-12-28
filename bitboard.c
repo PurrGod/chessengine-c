@@ -54,14 +54,31 @@ void initialize_kings(Bitboards *bb){
     bb->kings[1] = 0x1000000000000000;   // Black king (e8)
 }
 
-// Print a bitboard as a chessboard for debugging
+// void print_bitboard(U64 bitboard) {
+//     for (int rank = 0; rank <= 8; rank++) { // Iterate from rank 7 (8th rank) to rank 0 (1st rank)
+//         for (int file = 0; file <= 8; file++) {
+//             int square = rank * 8 + file; // Calculate the square index
+//             printf("%c ", (bitboard & (1ULL << square)) ? '1' : '.');
+//         }
+//         printf("\n");
+//     }
+//     printf("\n");
+// }
+
+
 void print_bitboard(U64 bitboard) {
-    for (int rank = 7; rank >= 0; rank--) {
-        for (int file = 0; file < 8; file++) {
-            int square = rank * 8 + file;
-            printf("%c ", (bitboard & (1ULL << square)) ? '1' : '.');
+    printf("  a b c d e f g h\n"); // Print file headers
+    for (int rank = 7; rank >= 0; rank--) { // Iterate over ranks from 8 to 1
+        printf("%d ", rank + 1); // Print rank number
+        for (int file = 0; file < 8; file++) { // Iterate over files from a to h
+            int square = rank * 8 + file; // Calculate square index
+            if (bitboard & (1ULL << square)) { // Check if the bit is set
+                printf("1 "); // Bit is set (piece exists)
+            } else {
+                printf(". "); // Bit is not set (empty square)
+            }
         }
         printf("\n");
     }
-    printf("\n");
+    printf("  a b c d e f g h\n\n"); // Print file headers again for clarity
 }

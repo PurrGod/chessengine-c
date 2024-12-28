@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g
 
 # Source files
-SRCS = main.c bitboard.c
+SRCS = main.c bitboard.c definitions.c
 # Object files
 OBJS = $(SRCS:.c=.o)
 # Output executable

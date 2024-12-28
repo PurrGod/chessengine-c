@@ -6,6 +6,50 @@
 //unsigned long long
 typedef unsigned long long U64;
 
+//max game moves
+#define MAXGAMEMOVES 2048 //half moves
+
+//information for undo moves
+typedef struct{
+    int move;
+    int castlePerm;
+    int enPas;
+    int fiftyMove;
+    U64 posKey;
+} S_undo;
+
+typedef struct {
+    U64 pawns[2];    // 0 for white, 1 for black
+    U64 knights[2];
+    U64 bishops[2];
+    U64 rooks[2];
+    U64 queens[2];
+    U64 kings[2];
+    U64 occupied[2]; // 0 for white's occupied, 1 for black's occupied
+    U64 all_pieces;  // All pieces combined (both white and black)
+
+    int enPas;
+    int ply; //number of half moves
+    int hisPly;
+
+    //check history[] to see if posKey repeats itself
+    U64 posKey; //unique key for that specific position
+    int fiftyMove; //status of the fiftymove rule
+
+    int castlePerm; //1001 represents castle permission 
+
+    int pceNum[13]; //stats of piece number
+    int bigPce[3];  //pieces that are not pawns
+    int majorPce[3]; //rook queen king
+    int minorPce[3]; //knight bishop
+
+    S_undo history[MAXGAMEMOVES]; //we have an array of all the moves, we can iterate 
+                                  //to anywhere to find all the details regarding the board position
+
+} Bitboards;
+
+
+
 // Board dimensions
 #define BOARD_SIZE 64
 #define FILE_COUNT 8
@@ -17,13 +61,19 @@ typedef unsigned long long U64;
 
 // Piece types
 enum Pieces {
-    PAWN = 0,
-    KNIGHT,
-    BISHOP,
-    ROOK,
-    QUEEN,
-    KING,
-    NONE // For empty squares
+    EMPTY = 0,
+    wPawn,
+    wKnight,
+    wBishop,
+    wRook,
+    wQueen,
+    wKing,
+    bPawn,
+    bKnight,
+    bBishop,
+    bRook,
+    bQueen,
+    bKing,
 };
 
 // Square constants (a8 = 0, h1 = 63)
@@ -37,6 +87,9 @@ enum Squares {
     A2, B2, C2, D2, E2, F2, G2, H2,
     A1, B1, C1, D1, E1, F1, G1, H1
 };
+
+//white and black castling
+enum {WKCA = 1, WQCA = 2, BKCA = 4, BQCA = 8};
 
 // Directions for move generation
 enum Directions {
@@ -56,6 +109,9 @@ enum Directions {
 #define CLEAR_BIT(b, n) ((b) &= ~BIT(n)) // Clear the nth bit in b
 #define IS_SET(b, n) ((b) & BIT(n)) // Check if the nth bit is set in b
 
+
+void square_to_algebraic(int square, char *notation);
+int algebraic_to_square(const char *notation);
 
 #endif // DEFINITIONS_H
 

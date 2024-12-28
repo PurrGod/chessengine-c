@@ -1,19 +1,7 @@
 #ifndef BITBOARD_H
 #define BITBOARD_H
 
-#include <stdint.h>
 #include "definitions.h"
-
-typedef struct {
-    U64 pawns[2];    // 0 for white, 1 for black
-    U64 knights[2];
-    U64 bishops[2];
-    U64 rooks[2];
-    U64 queens[2];
-    U64 kings[2];
-    U64 occupied[2]; // 0 for white's occupied, 1 for black's occupied
-    U64 all_pieces;  // All pieces combined (both white and black)
-} Bitboards;
 
 // Function prototypes
 void initialize_bitboards(Bitboards *bb);
