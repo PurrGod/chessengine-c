@@ -73,13 +73,13 @@ int main() {
 
     //set a bit
     printf("setting a piece e4:\n");
-    int e4 = algebraic_to_square("e4");
-    int e2 = algebraic_to_square("e2");
+    // int e4 = algebraic_to_square("e4");
+    // int e2 = algebraic_to_square("e2");
 
     // printf("Mask: %llu\n", mask);
     // U64 e2Mask = BIT(algebraic_to_square("e2"));
-    SET_BIT(bitboards.pawns[0], e4);
-    CLEAR_BIT(bitboards.pawns[0], e2);
+    SET_BIT(bitboards.pawns[0], E4);
+    CLEAR_BIT(bitboards.pawns[0], E2);
     
     // Update the all_pieces bitboard
     bitboards.all_pieces = bitboards.pawns[0] | bitboards.pawns[1] |
@@ -90,6 +90,16 @@ int main() {
                            bitboards.kings[0] | bitboards.kings[1];
 
     print_bitboard(bitboards.all_pieces);
+
+    U64 emptyboard = 0x0000000000000000;
+    printf("empty board: \n");
+    print_bitboard(emptyboard);
+
+    printf("board after moving to e4 and clearing e2: \n");
+    SET_BIT(emptyboard, A8);
+    SET_BIT(emptyboard, E4);
+    CLEAR_BIT(emptyboard, E2);
+    print_bitboard(emptyboard);
 
     return 0;
 }

@@ -70,7 +70,7 @@ void print_bitboard(U64 bitboard) {
     printf("  a b c d e f g h\n"); // Print file headers
     for (int rank = 7; rank >= 0; rank--) { // Iterate over ranks from 8 to 1
         printf("%d ", rank + 1); // Print rank number
-        for (int file = 0; file < 8; file++) { // Iterate over files from a to h
+        for (int file = 7; file >= 0; file--) { // Iterate over files from h to a
             int square = rank * 8 + file; // Calculate square index
             if (bitboard & (1ULL << square)) { // Check if the bit is set
                 printf("1 "); // Bit is set (piece exists)

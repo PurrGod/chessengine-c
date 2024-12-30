@@ -15,5 +15,5 @@ int algebraic_to_square(const char *square) {
     int file = square[0] - 'a';        // Map 'a'-'h' to 0-7
     int rank = square[1] - '1';        // Map '1'-'8' to 0-7
 
-    return rank * 8 + file;            // Calculate bitboard index
+    return (7 - rank) * 8 + (7 - file); // Calculate bitboard index for big-endian mapping
 }
