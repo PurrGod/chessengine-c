@@ -12,8 +12,34 @@ void square_to_algebraic(int square, char *notation) {
 
 // Convert algebraic notation (e.g., "a8") to square index (0-63)
 int algebraic_to_square(const char *square) {
-    int file = square[0] - 'a';        // Map 'a'-'h' to 0-7
-    int rank = square[1] - '1';        // Map '1'-'8' to 0-7
+    int file = square[0] - 'a';    // File ('a'-'h') → 0-7
+    int rank = square[1] - '1';    // Rank ('1'-'8') → 0-7
+    return (7 - rank) * 8 + file;  // Flip rank and calculate index
+}
 
-    return (7 - rank) * 8 + (7 - file); // Calculate bitboard index for big-endian mapping
+
+// Function to extract indices of set bits and return the count
+// move generations and board analysis
+int popbits(U64  bb, int *indices) {
+    int count = 0;
+    while (bb) {
+        indices[count++] = __builtin_ctzll(bb); // Get the index of the least significant set bit
+        bb &= bb - 1; // Clear the least significant set bit
+    }
+    return count;
+}
+int popabit(U64 *bb) {
+    *bb %= (*bb -1);
+}
+
+
+// count the # of bits in an integer
+// material evaluation and mobility
+int cntbits(U64 bb){
+    unsigned int count = 0;
+    while(bb){
+        bb &= (bb - 1);
+        count++;
+    }
+    return count;
 }

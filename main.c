@@ -78,8 +78,8 @@ int main() {
 
     // printf("Mask: %llu\n", mask);
     // U64 e2Mask = BIT(algebraic_to_square("e2"));
-    SET_BIT(bitboards.pawns[0], E4);
-    CLEAR_BIT(bitboards.pawns[0], E2);
+    setbit(bitboards.pawns[0], E4);
+    clearbit(bitboards.pawns[0], E2);
     
     // Update the all_pieces bitboard
     bitboards.all_pieces = bitboards.pawns[0] | bitboards.pawns[1] |
@@ -96,10 +96,61 @@ int main() {
     print_bitboard(emptyboard);
 
     printf("board after moving to e4 and clearing e2: \n");
-    SET_BIT(emptyboard, A8);
-    SET_BIT(emptyboard, E4);
-    CLEAR_BIT(emptyboard, E2);
+    setbit(emptyboard, A8);
+    setbit(emptyboard, E4);
+    setbit(emptyboard, H1);
     print_bitboard(emptyboard);
+
+    int indices[64];
+    int bitcounts;
+
+    // Extract indices of set bits
+    bitcounts = popbits(emptyboard, indices);
+
+    // Print the results
+    printf("Count: %d\n", bitcounts);
+    printf("Indices of popped bits: ");
+    for (int i = 0; i < bitcounts; i++) {
+        char notation[3];
+        square_to_algebraic(indices[i], notation),
+        printf("%s:%d ", notation, indices[i]);
+    }
+    printf("\n");
+
+    print_bitboard(emptyboard); 
+
+    printf("Before popped, newboard:\n");
+    U64 newboard = 0x0000000000000000;
+    setbit(newboard, E2);
+    setbit(newboard, E3);
+    setbit(newboard, E4);
+
+    print_bitboard(newboard);
+    int indices1[64];
+
+    int i = 0;
+    while (newboard){
+        if(i == 2){
+            break;
+        }
+        else{
+            newboard = popabit(&newboard);
+            print_bitboard(newboard);
+            i++;
+        }
+
+    }
+
+
+
+
+
+    printf("a8 index: %d\n", algebraic_to_square("a8")); // Expected: 63
+printf("h1 index: %d\n", algebraic_to_square("h1")); // Expected: 0
+printf("e4 index: %d\n", algebraic_to_square("e4")); // Expected: 36
+
+
+
 
     return 0;
 }
