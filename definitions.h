@@ -62,6 +62,15 @@ typedef struct {
 #define WHITE 0
 #define BLACK 1
 
+
+//rank maskings and file maskings
+#define RANK_2_MASK 0x000000000000FF00ULL // White pawns' starting rank
+#define RANK_7_MASK 0x00FF000000000000ULL // Black pawns' starting rank
+#define FILE_A_MASK 0x0101010101010101ULL
+#define FILE_H_MASK 0x8080808080808080ULL
+
+enum side{white = 0, black};
+
 // Piece types
 enum Pieces {
     EMPTY = 0,
@@ -123,7 +132,8 @@ int popbits(U64 bitboard, int *indices);
 int popdelbits(U64 *bitboard, int *indices);
 
 //pop a single LSB in bb
-int popabit(U64 *bb);
+U64 popabit(U64 *bb, int *lsb_index);
+
 
 //countbit() returns the number of flipped bits
 int cntbits(U64 bb);

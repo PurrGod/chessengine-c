@@ -28,8 +28,20 @@ int popbits(U64  bb, int *indices) {
     }
     return count;
 }
-int popabit(U64 *bb) {
-    *bb %= (*bb -1);
+
+//isolate the lsb
+//invert it with complement and add one
+//take the xor to flip the lsb
+U64 popabit(U64 *bb, int *lsb_index) {
+    if (*bb == 0){
+        *lsb_index = -1;
+        return 0;
+    }
+
+    U64 lsb = *bb & -*bb;
+    *lsb_index = __builtin_ctzll(lsb); // Get the index of the LSB
+    *bb ^= lsb;
+    return *bb;
 }
 
 

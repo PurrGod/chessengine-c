@@ -2,48 +2,6 @@
 #include "bitboard.h"
 #include "definitions.h"
 
-
-
-
-// int main() {
-//     // Initialize the bitboards to the starting position
-//     Bitboards bitboards;
-//     initialize_bitboards(&bitboards);
-
-//     // Debug: Print initial white pawns
-//     printf("Initial White Pawns:\n");
-//     print_bitboard(bitboards.pawns[0]);
-
-//     // Set a piece on e4 and clear the piece on e2
-//     printf("Setting a piece on e4 and clearing the piece on e2:\n");
-
-//     // Get the square indices for e4 and e2
-//     int e4_square = algebraic_to_square("e4");
-//     int e2_square = algebraic_to_square("e2");
-
-//     // Set the bit for e4 and clear the bit for e2
-//     SET_BIT(bitboards.pawns[0], e4_square); // Place a pawn on e4
-//     CLEAR_BIT(bitboards.pawns[0], e2_square); // Remove the pawn from e2
-
-//     printf("e4 -> %d\n", algebraic_to_square("e4")); // Expected: 28
-//     printf("e2 -> %d\n", algebraic_to_square("e2")); // Expected: 12
-//     printf("a8 -> %d\n", algebraic_to_square("a8")); // Expected: 0
-//     printf("h1 -> %d\n", algebraic_to_square("h1")); // Expected: 63
-
-
-
-
-//     // Debug: Print updated white pawns
-//     printf("Updated White Pawns:\n");
-//     print_bitboard(bitboards.pawns[0]);
-
-//     // Debug: Print all pieces
-//     printf("All Pieces:\n");
-//     print_bitboard(bitboards.all_pieces);
-
-//     return 0;
-// }
-
 int main() {
     // Create a bitboard struct
     Bitboards bitboards;
@@ -91,7 +49,7 @@ int main() {
 
     print_bitboard(bitboards.all_pieces);
 
-    U64 emptyboard = 0x0000000000000000;
+    U64 emptyboard = 0ULL;
     printf("empty board: \n");
     print_bitboard(emptyboard);
 
@@ -128,29 +86,16 @@ int main() {
     print_bitboard(newboard);
     int indices1[64];
 
-    int i = 0;
+    int i;
     while (newboard){
-        if(i == 2){
-            break;
-        }
-        else{
-            newboard = popabit(&newboard);
-            print_bitboard(newboard);
-            i++;
-        }
-
+        newboard = popabit(&newboard, &i);
+        print_bitboard(newboard);
+        printf("Index popped: %d\n", i);
     }
 
-
-
-
-
     printf("a8 index: %d\n", algebraic_to_square("a8")); // Expected: 63
-printf("h1 index: %d\n", algebraic_to_square("h1")); // Expected: 0
-printf("e4 index: %d\n", algebraic_to_square("e4")); // Expected: 36
-
-
-
+    printf("h1 index: %d\n", algebraic_to_square("h1")); // Expected: 0
+    printf("e4 index: %d\n", algebraic_to_square("e4")); // Expected: 36
 
     return 0;
 }
