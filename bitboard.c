@@ -4,7 +4,7 @@
 // Initialize bitboards to default starting position
 void initialize_bitboards(Bitboards *bb) {
     initialize_pawns(bb);
-    initiaize_knights(bb);
+    initialize_knights(bb);
     initialize_bishops(bb);
     initialize_rook(bb);
     initialize_queens(bb);
@@ -24,7 +24,7 @@ void initialize_pawns(Bitboards *bb){
     bb->pawns[1] = 0x00FF000000000000;  // Black pawns
 }
 
-void initiaize_knights(Bitboards *bb){
+void initialize_knights(Bitboards *bb){
     // Knights
     bb->knights[0] = 0x0000000000000042; // White knights (b1, g1)
     bb->knights[1] = 0x4200000000000000; // Black knights (b8, g8)
@@ -54,31 +54,33 @@ void initialize_kings(Bitboards *bb){
     bb->kings[1] = 0x1000000000000000;   // Black king (e8)
 }
 
-// void print_bitboard(U64 bitboard) {
-//     for (int rank = 0; rank <= 8; rank++) { // Iterate from rank 7 (8th rank) to rank 0 (1st rank)
-//         for (int file = 0; file <= 8; file++) {
-//             int square = rank * 8 + file; // Calculate the square index
-//             printf("%c ", (bitboard & (1ULL << square)) ? '1' : '.');
-//         }
-//         printf("\n");
-//     }
-//     printf("\n");
-// }
-
+// Print a bitboard in a human-readable format
 
 void print_bitboard(U64 bitboard) {
-    printf("  a b c d e f g h\n"); // Print file headers
-    for (int rank = 7; rank >= 0; rank--) { // Iterate over ranks from 8 to 1
-        printf("%d ", rank + 1); // Print rank number
-        for (int file = 7; file >= 0; file--) { // Iterate over files from h to a
-            int square = rank * 8 + file; // Calculate square index
-            if (bitboard & (1ULL << square)) { // Check if the bit is set
-                printf("1 "); // Bit is set (piece exists)
-            } else {
-                printf(". "); // Bit is not set (empty square)
-            }
+    printf("  a b c d e f g h\n");
+    for (int rank = 0; rank < 8; rank++) {
+        printf("%d ", 8 - rank);
+        for (int file = 0; file < 8; file++) {
+            int square = 63 - (rank * 8 + file);
+            char c = (bitboard & (1ULL << square)) ? '1' : '.';
+            printf("%c ", c);
         }
         printf("\n");
     }
-    printf("  a b c d e f g h\n\n"); // Print file headers again for clarity
+    printf("  a b c d e f g h\n\n");
+}
+
+
+
+void print_square_indices() {
+    printf("Bitboard square indices (MSB = A8 = 63, LSB = H1 = 0):\n\n");
+    for (int rank = 0; rank < 8; rank++) {
+        printf("%d ", 8 - rank); // Rank label (8 to 1)
+        for (int file = 0; file < 8; file++) {
+            int square = (7 - rank) * 8 + file; // Flip rank to match bitboard indexing
+            printf("%2d ", square);
+        }
+        printf("\n");
+    }
+    printf("  a  b  c  d  e  f  g  h\n\n");
 }
