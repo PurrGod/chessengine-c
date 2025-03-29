@@ -12,11 +12,10 @@ void square_to_algebraic(int square, char *notation) {
 
 // Convert algebraic notation (e.g., "a8") to square index (0-63)
 int algebraic_to_square(const char *square) {
-    int file = square[0] - 'a';    // File ('a'-'h') → 0-7
-    int rank = square[1] - '1';    // Rank ('1'-'8') → 0-7
-    return (7 - rank) * 8 + file;  // Flip rank and calculate index
+    int file = 7 - (square[0] - 'a');   // Flip file
+    int rank = square[1] - '1';         // Bottom = 0
+    return rank * 8 + file;
 }
-
 
 // Function to extract indices of set bits and return the count
 // move generations and board analysis

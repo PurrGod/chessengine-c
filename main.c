@@ -119,6 +119,10 @@ int main() {
     printf("Testing bitboard indices:\n");
     print_square_indices();
 
+    printf(algebraic_to_square("a8") == 63 ? "a8 to index: Passed\n" : "a8 to index: Failed\n");
+    printf("%d\n", algebraic_to_square("a8"));
+    printf(algebraic_to_square("h1") == 0 ? "h1 to index: Passed\n" : "h1 to index: Failed\n");
+    printf("%d\n", algebraic_to_square("h1"));
     
 
 
