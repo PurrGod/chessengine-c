@@ -124,6 +124,9 @@ int main() {
     printf(algebraic_to_square("h1") == 0 ? "h1 to index: Passed\n" : "h1 to index: Failed\n");
     printf("%d\n", algebraic_to_square("h1"));
     
+    char sq[3];
+    square_to_algebraic(0, sq);
+    printf("%s\n", sq);
 
 
 

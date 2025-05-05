@@ -5,8 +5,8 @@
 // using C's implicit ASCII conversion we can use the calculations from 
 // ranks and files to get the notation 
 void square_to_algebraic(int square, char *notation) {
-    notation[0] = 'a' + (square % FILE_COUNT); // File (a-h)
-    notation[1] = '8' - (square / FILE_COUNT); // Rank (8-1)
+    notation[0] = 'a' + (7 - (square % 8));     // Flip file
+    notation[1] = '1' + (square / 8);           // Bottom = '1', top = '8'
     notation[2] = '\0';
 }
 
