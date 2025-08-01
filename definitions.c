@@ -1,19 +1,19 @@
 #include <stdio.h>
 #include "definitions.h"
 
-// Convert a square index (0-63) to algebraic notation (e.g., 0 -> "a8")
 // using C's implicit ASCII conversion we can use the calculations from 
 // ranks and files to get the notation 
+// Convert a square index (0-63) to algebraic notation (e.g., 0 -> "a1")
 void square_to_algebraic(int square, char *notation) {
-    notation[0] = 'a' + (7 - (square % 8));     // Flip file
-    notation[1] = '1' + (square / 8);           // Bottom = '1', top = '8'
+    notation[0] = 'a' + (square % 8);
+    notation[1] = '1' + (square / 8);
     notation[2] = '\0';
 }
 
-// Convert algebraic notation (e.g., "a8") to square index (0-63)
+// Convert algebraic notation (e.g., "a1") to square index (0-63)
 int algebraic_to_square(const char *square) {
-    int file = 7 - (square[0] - 'a');   // Flip file
-    int rank = square[1] - '1';         // Bottom = 0
+    int file = square[0] - 'a';
+    int rank = square[1] - '1';
     return rank * 8 + file;
 }
 

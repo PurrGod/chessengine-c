@@ -10,6 +10,7 @@ def get_playlist_durations(playlist_url):
     # Iterate through each video in the playlist
     for video in playlist.videos:
         print(f"Video ID: {video.video_id}, Title: {video.title}, Duration: {video.length}")
+        print(f"Current total time: {timedelta(seconds=total_seconds)}")
         try:
             # Get the duration of the video in seconds
             duration = video.length

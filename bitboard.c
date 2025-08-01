@@ -61,7 +61,8 @@ void print_bitboard(U64 bitboard) {
     for (int rank = 0; rank < 8; rank++) {
         printf("%d ", 8 - rank);
         for (int file = 0; file < 8; file++) {
-            int square = 63 - (rank * 8 + file);
+            // Use the same, correct logic as print_square_indices
+            int square = (7 - rank) * 8 + file;
             char c = (bitboard & (1ULL << square)) ? '1' : '.';
             printf("%c ", c);
         }
@@ -71,12 +72,14 @@ void print_bitboard(U64 bitboard) {
 }
 
 
-
 void print_square_indices() {
-    printf("Bitboard square indices (MSB = A8 = 63, LSB = H1 = 0):\n\n");
+    // This text now correctly describes your board representation.
+    printf("Bitboard square indices (MSB = H8 = 63, LSB = A1 = 0):\n\n");
+
     for (int rank = 0; rank < 8; rank++) {
         printf("%d ", 8 - rank); // Rank label (8 to 1)
         for (int file = 0; file < 8; file++) {
+            // This logic correctly calculates square indices for A1=0.
             int square = (7 - rank) * 8 + file; // Flip rank to match bitboard indexing
             printf("%2d ", square);
         }

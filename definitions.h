@@ -63,10 +63,22 @@ typedef struct {
 #define BLACK 1
 
 
-//rank maskings and file maskings
-#define RANK_2_MASK 0x000000000000FF00ULL // White pawns' starting rank
-#define RANK_7_MASK 0x00FF000000000000ULL // Black pawns' starting rank
+// Rank and file masks
+#define RANK_1_MASK 0x00000000000000FFULL
+#define RANK_2_MASK 0x000000000000FF00ULL
+#define RANK_3_MASK 0x0000000000FF0000ULL
+#define RANK_4_MASK 0x00000000FF000000ULL
+#define RANK_5_MASK 0x000000FF00000000ULL
+#define RANK_6_MASK 0x0000FF0000000000ULL
+#define RANK_7_MASK 0x00FF000000000000ULL
+#define RANK_8_MASK 0xFF00000000000000ULL
 #define FILE_A_MASK 0x0101010101010101ULL
+#define FILE_B_MASK 0x0202020202020202ULL
+#define FILE_C_MASK 0x0404040404040404ULL
+#define FILE_D_MASK 0x0808080808080808ULL
+#define FILE_E_MASK 0x1010101010101010ULL
+#define FILE_F_MASK 0x2020202020202020ULL
+#define FILE_G_MASK 0x4040404040404040ULL
 #define FILE_H_MASK 0x8080808080808080ULL
 
 enum side{white = 0, black};
@@ -88,16 +100,17 @@ enum Pieces {
     bKing,
 };
 
-// Square enum for standard bitboard indexing: MSB = A8 (63), LSB = H1 (0)
+// Square enum for standard bitboard indexing: LSB = A1 (0), MSB = H8 (63)
+// LERF - Little Endian Rank File
 enum Squares {
-    H1 = 0, G1, F1, E1, D1, C1, B1, A1,  // Rank 1 (bottom)
-    H2, G2, F2, E2, D2, C2, B2, A2,
-    H3, G3, F3, E3, D3, C3, B3, A3,
-    H4, G4, F4, E4, D4, C4, B4, A4,
-    H5, G5, F5, E5, D5, C5, B5, A5,
-    H6, G6, F6, E6, D6, C6, B6, A6,
-    H7, G7, F7, E7, D7, C7, B7, A7,
-    H8, G8, F8, E8, D8, C8, B8, A8   // Rank 8 (top)
+    A1 = 0, B1, C1, D1, E1, F1, G1, H1,
+    A2, B2, C2, D2, E2, F2, G2, H2,
+    A3, B3, C3, D3, E3, F3, G3, H3,
+    A4, B4, C4, D4, E4, F4, G4, H4,
+    A5, B5, C5, D5, E5, F5, G5, H5,
+    A6, B6, C6, D6, E6, F6, G6, H6,
+    A7, B7, C7, D7, E7, F7, G7, H7,
+    A8, B8, C8, D8, E8, F8, G8, H8
 };
 
 

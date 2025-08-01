@@ -1,8 +1,27 @@
+//movegen.h
+
+#ifndef MOVEGEN_H
+#define MOVEGEN_H
+
 #include "definitions.h"
 
 // Rank masks for move generation
 
 // attack masks for pawns
-U64 pawn_attackMasks(U64 bb, side);
+// These masks are used to determine the squares attacked by pawns
+U64 pawn_attackMasks(U64 bb, int side);
 
 // 
+extern U64 knight_attack_table[64];
+extern U64 king_attack_table[64];
+
+void init_knight_attacks();
+void init_king_attacks();
+// These masks are used to determine the squares attacked by knights
+
+// generating pawn moves
+// creates pseudo-legal moves for pawns (doesn't check for legality or king checks)
+// not an init function but generates moves
+U64 gen_pawn_moves(Bitboards *bb, int side);
+
+#endif // MOVEGEN_H
