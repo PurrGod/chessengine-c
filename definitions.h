@@ -100,6 +100,13 @@ enum Pieces {
     bKing,
 };
 
+// ray directions enum
+// This enum is used as an index for our sliding attack table.
+enum RayDirection {
+    NORTH, EAST, SOUTH, WEST,
+    NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST
+};
+
 // Square enum for standard bitboard indexing: LSB = A1 (0), MSB = H8 (63)
 // LERF - Little Endian Rank File
 enum Squares {

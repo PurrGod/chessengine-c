@@ -17,11 +17,19 @@ extern U64 king_attack_table[64];
 
 void init_knight_attacks();
 void init_king_attacks();
+void init_sliding_rays();
 // These masks are used to determine the squares attacked by knights
 
 // generating pawn moves
 // creates pseudo-legal moves for pawns (doesn't check for legality or king checks)
 // not an init function but generates moves
 U64 gen_pawn_moves(Bitboards *bb, int side);
+U64 gen_rook_moves(Bitboards *bb, int side);
+U64 gen_bishop_moves(Bitboards *bb, int side);
+U64 gen_queen_moves(Bitboards *bb, int side);
+U64 gen_king_moves(Bitboards *bb, int side);
+U64 gen_knight_moves(Bitboards *bb, int side);
+// These functions generate pseudo-legal moves for each piece type
+
 
 #endif // MOVEGEN_H
