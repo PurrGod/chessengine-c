@@ -394,21 +394,21 @@ void init_sliding_rays(){
 
 
 // U64 gen_knight_moves(Bitboards *bb, int side) {
-    U64 moves = 0ULL;
-    U64 occupied = bb->all_pieces;
+//     U64 moves = 0ULL;
+//     U64 occupied = bb->all_pieces;
 
-    U64 knights = bb->knights[side];
+//     U64 knights = bb->knights[side];
 
-    // loop through each of the knights
-    while (knights){
-        int start_square;
+//     // loop through each of the knights
+//     while (knights){
+//         int start_square;
 
-        popabit(&knights, &start_square);
+//         popabit(&knights, &start_square);
 
-        // Knight moves are simply the attack table for the knight
-        moves |= knight_attack_table[start_square];
-    }
+//         // Knight moves are simply the attack table for the knight
+//         moves |= knight_attack_table[start_square];
+//     }
 
-    // removes moves that landed on our own pieces
-    return moves & ~bb->occupied[side]; 
-}
+//     // removes moves that landed on our own pieces
+//     return moves & ~bb->occupied[side]; 
+// }
