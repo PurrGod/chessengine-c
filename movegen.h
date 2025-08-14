@@ -31,5 +31,16 @@ U64 gen_king_moves(Bitboards *bb, int side);
 U64 gen_knight_moves(Bitboards *bb, int side);
 // These functions generate pseudo-legal moves for each piece type
 
+// generating moves to add to movelist
+// this function, encodes the moves to 32 bit integer
+static void add_move(moveList *list, int sq_from, int sq_to, int captured, int promotion, int flags);
+static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list);
+
+void generate_all_moves(Bitboards *bb, moveList *list, int side);
+
+
+
+
+
 
 #endif // MOVEGEN_H

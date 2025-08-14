@@ -1,3 +1,5 @@
+// definitions.h
+
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
 
@@ -8,6 +10,28 @@ typedef unsigned long long U64;
 
 //max game moves
 #define MAXGAMEMOVES 2048 //half moves
+
+// move list
+typedef struct{
+    int moves[256];
+    int count;
+} moveList;
+
+// move encoding
+// A move is encoded as follows:
+// 0-5:   To Square
+// 6-11:  From Square
+// 12-15: Captured Piece Type
+// 16-19: Promotion Piece Type
+// 20:    En Passant Flag
+// 21:    Castling Flag
+#define MOVE_TO(m)          ((m) & 0x3F)
+#define MOVE_FROM(m)        (((m) >> 6) & 0x3F)
+#define MOVE_CAPTURED(m)    (((m) >> 12) & 0xF)
+#define MOVE_PROMOTION(m)   (((m) >> 16) & 0xF)
+#define MOVE_IS_ENPASSANT   (1 << 20)
+#define MOVE_IS_CASTLE      (1 << 21)
+
 
 //information for undo moves
 typedef struct{
@@ -141,8 +165,6 @@ enum Directions {
 #define setbit(b, n) ((b) |= bit(n)) // Set the nth bit in b
 #define clearbit(b, n) ((b) &= ~bit(n)) // Clear the nth bit in b
 #define isset(b, n) ((b) & bit(n)) // Check if the nth bit is set in b
-
-
 
 
 //popbit and countbit functions
