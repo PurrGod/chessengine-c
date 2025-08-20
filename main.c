@@ -16,6 +16,48 @@ void assert_string_equals(const char* actual, const char* expected) {
     }
 }
 
+void test_special_pawn_moves() {
+    printf("--- Testing Special Pawn Moves ---\n");
+
+    // Test Case 1: Promotion
+    Bitboards bb1 = {0};
+    setbit(bb1.pawns[WHITE], A7);
+    setbit(bb1.rooks[BLACK], B8); // Blocker and capture target
+    bb1.occupied[WHITE] = bb1.pawns[WHITE];
+    bb1.occupied[BLACK] = bb1.rooks[BLACK];
+    bb1.all_pieces = bb1.occupied[WHITE] | bb1.occupied[BLACK];
+    
+    moveList list1;
+    generate_all_moves(&bb1, WHITE, &list1);
+    // Should find 4 promotion pushes (a8=Q,R,B,N) and 4 promotion captures (b8=Q,R,B,N)
+    assert(list1.count == 8);
+    printf("✅ Promotion generation test passed!\n");
+
+    // Test Case 2: En Passant
+    Bitboards bb2 = {0};
+    setbit(bb2.pawns[WHITE], E5);
+    setbit(bb2.pawns[BLACK], D5); // The pawn that just moved two squares
+    bb2.enPas = D6; // The en passant target square
+    bb2.occupied[WHITE] = bb2.pawns[WHITE];
+    bb2.occupied[BLACK] = bb2.pawns[BLACK];
+    bb2.all_pieces = bb2.occupied[WHITE] | bb2.occupied[BLACK];
+
+    moveList list2;
+    generate_all_moves(&bb2, WHITE, &list2);
+    
+    int found_ep = 0;
+    for (int i = 0; i < list2.count; i++) {
+        if (list2.moves[i] & MOVE_IS_ENPASSANT) {
+            assert(MOVE_FROM(list2.moves[i]) == E5);
+            assert(MOVE_TO(list2.moves[i]) == D6);
+            found_ep = 1;
+        }
+    }
+    assert(found_ep == 1);
+    printf("✅ En Passant generation test passed!\n");
+}
+
+
 void run_tests() {
     printf("--- Running All Tests ---\n\n");
 
@@ -149,57 +191,16 @@ void test_knight_attack_generation() {
     printf("✅ Knight attacks passed!\n\n");
 }
 
-void test_pawn_move_generation() {
-    printf("Testing pawn move generation...\n");
-    
-    // --- WHITE PAWN TESTS ---
-    // Test Case 1: Initial position
-    Bitboards bb;
-    initialize_bitboards(&bb);
-    U64 white_pawn_moves = gen_pawn_moves(&bb, WHITE);
-    U64 expected_start_moves_w = 0x00000000FFFF0000ULL;
-    assert(white_pawn_moves == expected_start_moves_w);
-
-    // Test Case 2: A more complex position for white
-    Bitboards bb2 = {0};
-    setbit(bb2.pawns[WHITE], E4);
-    setbit(bb2.pawns[BLACK], D5);
-    setbit(bb2.knights[BLACK], F5);
-    bb2.occupied[WHITE] = bb2.pawns[WHITE];
-    bb2.occupied[BLACK] = bb2.pawns[BLACK] | bb2.knights[BLACK];
-    bb2.all_pieces = bb2.occupied[WHITE] | bb2.occupied[BLACK];
-    U64 complex_moves_w = gen_pawn_moves(&bb2, WHITE);
-    U64 expected_complex_w = (1ULL << E5) | (1ULL << D5) | (1ULL << F5);
-    assert(complex_moves_w == expected_complex_w);
-    printf("✅ White pawn moves passed!\n");
-
-    // --- BLACK PAWN TESTS ---
-    // Test Case 3: Initial position
-    U64 black_pawn_moves = gen_pawn_moves(&bb, BLACK);
-    U64 expected_start_moves_b = 0xFFFF00000000ULL;
-    assert(black_pawn_moves == expected_start_moves_b);
-
-    // Test Case 4: A more complex position for black
-    Bitboards bb3 = {0};
-    setbit(bb3.pawns[BLACK], E5);
-    setbit(bb3.pawns[WHITE], D4);
-    setbit(bb3.knights[WHITE], F4);
-    bb3.occupied[BLACK] = bb3.pawns[BLACK];
-    bb3.occupied[WHITE] = bb3.pawns[WHITE] | bb3.knights[WHITE];
-    bb3.all_pieces = bb3.occupied[BLACK] | bb3.occupied[WHITE];
-    U64 complex_moves_b = gen_pawn_moves(&bb3, BLACK);
-    U64 expected_complex_b = (1ULL << E4) | (1ULL << D4) | (1ULL << F4);
-    assert(complex_moves_b == expected_complex_b);
-    print_bitboard(white_pawn_moves);
-    printf("✅ Black pawn moves passed!\n");
-
-    printf("✅ All pawn move tests passed!\n\n");
-}
 
 
 int main() {
     run_tests();
-    test_knight_attack_generation();
-    test_pawn_move_generation();
+    init_knight_attacks();
+    init_king_attacks();
+    init_sliding_rays();
+    init_pawn_attacks(); // <-- Add new init
+
+    printf("Running All Tests");
+    test_special_pawn_moves();
     return 0;
 }

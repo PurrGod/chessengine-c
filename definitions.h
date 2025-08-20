@@ -149,17 +149,6 @@ enum Squares {
 //white and black castling
 enum {WKCA = 1, WQCA = 2, BKCA = 4, BQCA = 8};
 
-// Directions for move generation
-enum Directions {
-    NORTH = 8,
-    SOUTH = -8,
-    EAST = 1,
-    WEST = -1,
-    NORTH_EAST = 9,
-    NORTH_WEST = 7,
-    SOUTH_EAST = -7,
-    SOUTH_WEST = -9
-};
 
 // Utility macros for bitwise operations
 #define bit(n) (1ULL << (n)) // Create a bitmask for the nth square

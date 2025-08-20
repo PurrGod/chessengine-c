@@ -21,7 +21,7 @@ U64 pawn_attacks[2][64];
 
 static void add_move(moveList *list, int from, int to, int captured, int promotion, int flags) {
     // We will expand this later to handle flags
-    list->moves[list->count] = (from) | (to << 6) | (captured << 12) | (promotion << 16);
+    list->moves[list->count] = (from) | (to << 6) | (captured << 12) | (promotion << 16) | (flags);
     list->count++;
 }
 
@@ -83,8 +83,8 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
         U64 ne_cap_promo = ne_cap & RANK_8_MASK;
         ne_cap &= ~RANK_8_MASK;
 
-        while(nw_cap) {int to; popabit(&nw_cap, &to); int captured = get_piece_on_square(bb, to, side); add_move(list, to - 7, to, bPawn, EMPTY, 0);} 
-        while(ne_cap) {int to; popabit(&ne_cap, &to); int captured = get_piece_on_square(bb, to, side); add_move(list, to - 9, to, bPawn, EMPTY, 0);} 
+        while(nw_cap) {int to; popabit(&nw_cap, &to); int captured = get_piece_on_square(bb, to, side); add_move(list, to - 7, to, captured, EMPTY, 0);} 
+        while(ne_cap) {int to; popabit(&ne_cap, &to); int captured = get_piece_on_square(bb, to, side); add_move(list, to - 9, to, captured, EMPTY, 0);} 
 
         // promotion capture moves
         while(nw_cap_promo) {
@@ -189,7 +189,7 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
     }
 }
 
-void generate_all_moves(Bitboards *bb, moveList *list, int side) {
+void generate_all_moves(Bitboards *bb, int side, moveList *list) {
     if (list == NULL){
         return;
     }
@@ -267,8 +267,6 @@ void init_king_attacks(){
     }
 }   
 
-
-
 // generate bitboards for every direction
 void init_sliding_rays(){
 
@@ -301,228 +299,3 @@ void init_sliding_rays(){
     }
 }
 
-// generate rook moves
-// pseudocode for generating rook moves
-/*
-
-*/
-// U64 gen_pawn_moves(Bitboards *bb, int side) {
-//     U64 moves = 0ULL;
-//     U64 empty_squares = ~bb->all_pieces;
-
-//     U64 white_pawns = bb->pawns[WHITE];
-//     U64 black_pawns = bb->pawns[BLACK];
-
-//     if (side == WHITE) {
-//         // Single pushes
-//         U64 single_pushes = (white_pawns << 8) & empty_squares;
-//         moves |= single_pushes;
-
-//         // Double pushes
-//         U64 pawns_on_rank2 = white_pawns & RANK_2_MASK;
-//         U64 empty_rank3 = (pawns_on_rank2 << 8) & empty_squares;
-//         U64 double_pushes = (empty_rank3 << 8) & empty_squares;
-//         moves |= double_pushes;
-
-//         // Captures
-//         U64 NE_captures = ((white_pawns & ~FILE_H_MASK) << 9) & bb->occupied[BLACK];
-//         U64 NW_captures = ((white_pawns & ~FILE_A_MASK) << 7) & bb->occupied[BLACK];
-//         moves |= NE_captures | NW_captures;
-
-//     } else { // side == BLACK
-//         // Single pushes
-//         U64 single_pushes = (black_pawns >> 8) & empty_squares;
-//         moves |= single_pushes;
-
-//         // Double pushes
-//         U64 pawns_on_rank7 = black_pawns & RANK_7_MASK;
-//         U64 empty_rank6 = (pawns_on_rank7 >> 8) & empty_squares;
-//         U64 double_pushes = (empty_rank6 >> 8) & empty_squares;
-//         moves |= double_pushes;
-
-//         // Captures
-//         U64 SE_captures = ((black_pawns & ~FILE_A_MASK) >> 9) & bb->occupied[WHITE];
-//         U64 SW_captures = ((black_pawns & ~FILE_H_MASK) >> 7) & bb->occupied[WHITE];
-//         moves |= SE_captures | SW_captures;
-//     }
-
-//     return moves;
-// }
-
-// U64 gen_rook_moves(Bitboards *bb, int side) {
-//     U64 moves = 0ULL;
-//     U64 occupied = bb->all_pieces;
-
-//     U64 rooks = bb->rooks[side];
-
-//     // loop through each of the rooks
-//     while (rooks){
-//         int start_square;
-
-//         popabit(&rooks, &start_square);
-
-//         // North
-//         U64 north_ray = sliding_rays[NORTH][start_square];
-//         U64 north_blockers = north_ray & occupied;
-//         if (north_blockers) {
-//             int first_blocker = __builtin_ctzll(north_blockers);
-//             north_ray ^= sliding_rays[NORTH][first_blocker];
-//         }
-
-//         moves |= north_ray;
-
-//         // South
-//         U64 south_ray = sliding_rays[SOUTH][start_square];
-//         U64 south_blockers = south_ray & occupied;
-//         if (south_blockers) {
-//             int first_blocker = __builtin_clzll(south_blockers);
-//             south_ray ^= sliding_rays[SOUTH][63 - first_blocker];
-//         }
-
-//         moves |= south_ray;
-
-//         // East
-//         U64 east_ray = sliding_rays[EAST][start_square];
-//         U64 east_blockers = east_ray & occupied;
-//         if (east_blockers) {
-//             int first_blocker = __builtin_ctzll(east_blockers);
-//             east_ray ^= sliding_rays[EAST][first_blocker];
-//         }
-
-//         moves |= east_ray;
-
-//         // West
-//         U64 west_ray = sliding_rays[WEST][start_square];
-//         U64 west_blockers = west_ray & occupied;
-//         if (west_blockers) {
-//             int first_blocker = __builtin_clzll(west_blockers);
-//             west_ray ^= sliding_rays[WEST][63 - first_blocker];
-//         }
-
-//         moves |= west_ray;
-
-//     }
-
-//     // removes moves that landed on our own pieces
-//     return moves & ~bb->occupied[side]; 
-
-// }
-
-
-// U64 gen_bishop_moves(Bitboards *bb, int side) {
-//     U64 moves = 0ULL;
-//     U64 occupied = bb->all_pieces;
-
-//     U64 bishops = bb->bishops[side];
-
-//     // loop through each of the bishops
-//     while (bishops){
-//         int start_square;
-
-//         popabit(&bishops, &start_square);
-
-//         // North-East - (+)
-//         U64 ne_ray = sliding_rays[NORTH_EAST][start_square];
-//         U64 ne_blockers = ne_ray & occupied;
-//         if (ne_blockers) {
-//             int first_blocker = __builtin_ctzll(ne_blockers);
-//             ne_ray ^= sliding_rays[NORTH_EAST][first_blocker];
-//         }
-
-//         moves |= ne_ray;
-
-//         // South-East - (-)
-//         U64 se_ray = sliding_rays[SOUTH_EAST][start_square];
-//         U64 se_blockers = se_ray & occupied;
-//         if (se_blockers) {
-//             int first_blocker = __builtin_clzll(se_blockers);
-//             se_ray ^= sliding_rays[SOUTH_EAST][63 - first_blocker];
-//         }
-
-//         moves |= se_ray;
-
-//         // South-West - (-)
-//         U64 sw_ray = sliding_rays[SOUTH_WEST][start_square];
-//         U64 sw_blockers = sw_ray & occupied;
-//         if (sw_blockers) {
-//             int first_blocker = __builtin_clzll(sw_blockers);
-//             sw_ray ^= sliding_rays[SOUTH_WEST][63 - first_blocker];
-//         }
-
-//         moves |= sw_ray;
-
-//         // North-West - (+)
-//         U64 nw_ray = sliding_rays[NORTH_WEST][start_square];
-//         U64 nw_blockers = nw_ray & occupied;
-//         if (nw_blockers) {
-//             int first_blocker = __builtin_ctzll(nw_blockers);
-//             nw_ray ^= sliding_rays[NORTH_WEST][first_blocker];
-//         }
-
-//         moves |= nw_ray;
-
-//     }
-
-//     // removes moves that landed on our own pieces
-//     return moves & ~bb->occupied[side]; 
-// }
-
-
-// U64 gen_queen_moves(Bitboards *bb, int side) {
-//     // Queen moves are a combination of rook and bishop moves
-//     U64 original_rook = bb->rooks[side];
-//     U64 original_bishop = bb->bishops[side];
-
-//     bb->rooks[side] = bb->queens[side];
-//     bb->bishops[side] = bb->queens[side];
-
-//     U64 rook_moves = gen_rook_moves(bb, side);
-//     U64 bishop_moves = gen_bishop_moves(bb, side);
-
-//     bb->rooks[side] = original_rook;
-//     bb->bishops[side] = original_bishop;
-    
-//     return rook_moves | bishop_moves;
-// }
-
-
-// U64 gen_king_moves(Bitboards *bb, int side) {
-//     U64 moves = 0ULL;
-//     U64 occupied = bb->all_pieces;
-
-//     U64 kings = bb->kings[side];
-
-//     // loop through each of the kings
-//     while (kings){
-//         int start_square;
-
-//         popabit(&kings, &start_square);
-
-//         // King moves are simply the attack table for the king
-//         moves |= king_attack_table[start_square];
-//     }
-
-//     // removes moves that landed on our own pieces
-//     return moves & ~bb->occupied[side]; 
-// }
-
-
-// U64 gen_knight_moves(Bitboards *bb, int side) {
-//     U64 moves = 0ULL;
-//     U64 occupied = bb->all_pieces;
-
-//     U64 knights = bb->knights[side];
-
-//     // loop through each of the knights
-//     while (knights){
-//         int start_square;
-
-//         popabit(&knights, &start_square);
-
-//         // Knight moves are simply the attack table for the knight
-//         moves |= knight_attack_table[start_square];
-//     }
-
-//     // removes moves that landed on our own pieces
-//     return moves & ~bb->occupied[side]; 
-// }
