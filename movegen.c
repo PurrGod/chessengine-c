@@ -17,11 +17,36 @@
 U64 knight_attack_table[64];
 U64 king_attack_table[64];
 U64 sliding_rays[8][64];
+U64 pawn_attacks[2][64];
 
 static void add_move(moveList *list, int from, int to, int captured, int promotion, int flags) {
     // We will expand this later to handle flags
     list->moves[list->count] = (from) | (to << 6) | (captured << 12) | (promotion << 16);
     list->count++;
+}
+
+static int get_piece_on_square(Bitboards *bb, int square, int side) {
+    U64 mask = 1ULL << square;
+    if (bb->pawns[side] & mask) return (side == WHITE) ? wPawn : bPawn;
+    if (bb->knights[side] & mask) return (side == WHITE) ? wKnight : bKnight;
+    if (bb->bishops[side] & mask) return (side == WHITE) ? wBishop : bBishop;
+    if (bb->rooks[side] & mask) return (side == WHITE) ? wRook : bRook;
+    if (bb->queens[side] & mask) return (side == WHITE) ? wQueen : bQueen;
+    if (bb->kings[side] & mask) return (side == WHITE) ? wKing : bKing;
+    return EMPTY;
+}
+
+
+// initialize pawn attack tables
+void init_pawn_attacks() {
+    for (int sq = 0; sq < 64; sq++) {
+        pawn_attacks[WHITE][sq] = 0ULL;
+        pawn_attacks[BLACK][sq] = 0ULL;
+        if ((1ULL << sq) & ~FILE_A_MASK) setbit(pawn_attacks[WHITE][sq], sq + 7);
+        if ((1ULL << sq) & ~FILE_H_MASK) setbit(pawn_attacks[WHITE][sq], sq + 9);
+        if ((1ULL << sq) & ~FILE_H_MASK) setbit(pawn_attacks[BLACK][sq], sq - 7);
+        if ((1ULL << sq) & ~FILE_A_MASK) setbit(pawn_attacks[BLACK][sq], sq - 9);
+    }  
 }
 
 // helper functions for generating moves to append to move list
@@ -43,6 +68,10 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
             int to_sq;
             popabit(&promotions, &to_sq);
             add_move(list, to_sq - 8, to_sq, EMPTY, wQueen, 0);
+            add_move(list, to_sq - 8, to_sq, EMPTY, wRook, 0);
+            add_move(list, to_sq - 8, to_sq, EMPTY, wBishop, 0);
+            add_move(list, to_sq - 8, to_sq, EMPTY, wKing, 0);
+            
         }
 
         // pawn captures
@@ -54,10 +83,60 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
         U64 ne_cap_promo = ne_cap & RANK_8_MASK;
         ne_cap &= ~RANK_8_MASK;
 
-        while(nw_cap) {int to; popabit(&nw_cap, &to); add_move(list, to - 7, to, bPawn, EMPTY, 0);} 
-        while(ne_cap) {int to; popabit(&ne_cap, &to); add_move(list, to - 9, to, bPawn, EMPTY, 0);} 
+        while(nw_cap) {int to; popabit(&nw_cap, &to); int captured = get_piece_on_square(bb, to, side); add_move(list, to - 7, to, bPawn, EMPTY, 0);} 
+        while(ne_cap) {int to; popabit(&ne_cap, &to); int captured = get_piece_on_square(bb, to, side); add_move(list, to - 9, to, bPawn, EMPTY, 0);} 
 
-        // STILL NEEDS WORK HERE //
+        // promotion capture moves
+        while(nw_cap_promo) {
+            int to_sq;
+            popabit(&nw_cap_promo, &to_sq); int captured = get_piece_on_square(bb, to_sq, side);
+            add_move(list, to_sq - 7, to_sq, captured, wQueen, 0);
+            add_move(list, to_sq - 7, to_sq, captured, wRook, 0);
+            add_move(list, to_sq - 7, to_sq, captured, wBishop, 0);
+            add_move(list, to_sq - 7, to_sq, captured, wKnight, 0);
+        }
+
+        while(ne_cap_promo) {
+            int to_sq;
+            popabit(&ne_cap_promo, &to_sq); int captured = get_piece_on_square(bb, to_sq, side);
+            add_move(list, to_sq - 9, to_sq, captured, wQueen, 0);
+            add_move(list, to_sq - 9, to_sq, captured, wRook, 0);
+            add_move(list, to_sq - 9, to_sq, captured, wBishop, 0);
+            add_move(list, to_sq - 9, to_sq, captured, wKnight, 0);
+        }
+
+        // En Passant
+        // Logic
+        /*
+        We make use of the "En Pas" variable in the bb structure. En Pas is given a potential capture
+        square value ONLY when the opponent made a double pawn push prior. For example, if black pawn moved 
+        from d7 to d5 (double push) then for a potential en passant, white can captue on d6.
+
+        We need to find out what white pawns can do this only if the en pas value is True.
+        - Since a white pawn can capture on en passant, the square it captures and moves to is essentially
+          the single black pawn push so in this case it would be d6. 
+        
+          We can use this information to isolate white pawns that can caputure such as pawns on e5 and c5 which can 
+          capture on d6.
+
+          First we take the attack table of a pawn on d6 which would give us the bit mask of e5 and c5. We can then
+          do an and operation of this mask with the white pawns to isolate whatever pawns on e5 and c5 for example.
+          We can then add this to a captured bitboard and then pop each square and append to move list.
+        */
+
+        if (bb->enPas != NO_SQ) {
+            // find captures of black pawn on single push
+            U64 enpass_captures = pawn_attacks[BLACK][bb->enPas];
+            enpass_captures &= pawns;
+
+            while(enpass_captures) {
+                int to_sq = bb->enPas;
+                int from;
+                popabit(&enpass_captures, &from);
+                add_move(list, from, to_sq, bPawn, EMPTY, MOVE_IS_ENPASSANT);
+            }
+        }
+
     } else {
         U64 pawns = bb->pawns[BLACK];
         U64 single_pushes = (pawns >> 8) & empty;
@@ -69,9 +148,44 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
         while (double_pushes) {int to_sq; popabit(&double_pushes, &to_sq); add_move(list, to_sq + 16, to_sq, EMPTY, EMPTY, 0);}
         while (promotions) {
             int to_sq;
-            popabit(promotions, to_sq);
+            popabit(&promotions, &to_sq);
             add_move(list, to_sq + 8, to_sq, EMPTY, bQueen, 0);
         }
+
+        // pawn captures
+        U64 sw_cap = ((pawns & ~FILE_A_MASK) >> 9) & bb->occupied[opponent];
+        U64 se_cap = ((pawns & ~FILE_H_MASK) >> 7) & bb->occupied[opponent];
+
+        U64 sw_cap_promo = sw_cap & RANK_1_MASK;
+        sw_cap &= ~RANK_1_MASK;
+        U64 se_cap_promo = se_cap & RANK_1_MASK;
+        se_cap &= ~RANK_1_MASK;
+
+        while(sw_cap) { int to; popabit(&sw_cap, &to); int cap = get_piece_on_square(bb, to, opponent); add_move(list, to + 9, to, cap, EMPTY, 0); }
+        while(se_cap) { int to; popabit(&se_cap, &to); int cap = get_piece_on_square(bb, to, opponent); add_move(list, to + 7, to, cap, EMPTY, 0); }
+
+        while(sw_cap_promo) {
+            int to; popabit(&sw_cap_promo, &to); int cap = get_piece_on_square(bb, to, opponent);
+            add_move(list, to + 9, to, cap, bQueen, 0); add_move(list, to + 9, to, cap, bRook, 0);
+            add_move(list, to + 9, to, cap, bBishop, 0); add_move(list, to + 9, to, cap, bKnight, 0);
+        }
+        while(se_cap_promo) {
+            int to; popabit(&se_cap_promo, &to); int cap = get_piece_on_square(bb, to, opponent);
+            add_move(list, to + 7, to, cap, bQueen, 0); add_move(list, to + 7, to, cap, bRook, 0);
+            add_move(list, to + 7, to, cap, bBishop, 0); add_move(list, to + 7, to, cap, bKnight, 0);
+        }
+
+        // En Passant
+        if (bb->enPas != NO_SQ) {
+            U64 en_attackers = pawn_attacks[WHITE][bb->enPas] & pawns;
+            while (en_attackers) {
+                int from;
+                int to_sq = bb->enPas;
+                popabit(&en_attackers, &from);
+                add_move(list, from, to_sq, wPawn, EMPTY, MOVE_IS_ENPASSANT);
+            }
+        }
+
     }
 }
 
