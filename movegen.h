@@ -16,6 +16,8 @@ void init_knight_attacks();
 void init_king_attacks();
 void init_sliding_rays();
 void init_pawn_attacks();
+
+void init_all_piece_tables(); // calls the above functions
 // These masks are used to determine the squares attacked by knights
 
 // These functions generate pseudo-legal moves for each piece type

@@ -19,6 +19,16 @@ U64 king_attack_table[64];
 U64 sliding_rays[8][64];
 U64 pawn_attacks[2][64];
 
+void generate_all_moves(Bitboards *bb, int side, moveList *list) {
+    if (list == NULL){
+        return;
+    }
+    list->count = 0;
+
+    generate_pawn_move_list(bb, side, list);
+
+}
+
 static void add_move(moveList *list, int from, int to, int captured, int promotion, int flags) {
     // We will expand this later to handle flags
     list->moves[list->count] = (to) | (from << 6) | (captured << 12) | (promotion << 16) | (flags);
@@ -37,17 +47,7 @@ static int get_piece_on_square(Bitboards *bb, int square, int side) {
 }
 
 
-// initialize pawn attack tables
-void init_pawn_attacks() {
-    for (int sq = 0; sq < 64; sq++) {
-        pawn_attacks[WHITE][sq] = 0ULL;
-        pawn_attacks[BLACK][sq] = 0ULL;
-        if ((1ULL << sq) & ~FILE_A_MASK) setbit(pawn_attacks[WHITE][sq], sq + 7);
-        if ((1ULL << sq) & ~FILE_H_MASK) setbit(pawn_attacks[WHITE][sq], sq + 9);
-        if ((1ULL << sq) & ~FILE_H_MASK) setbit(pawn_attacks[BLACK][sq], sq - 7);
-        if ((1ULL << sq) & ~FILE_A_MASK) setbit(pawn_attacks[BLACK][sq], sq - 9);
-    }  
-}
+
 
 // helper functions for generating moves to append to move list
 static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
@@ -189,14 +189,70 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
     }
 }
 
-void generate_all_moves(Bitboards *bb, int side, moveList *list) {
-    if (list == NULL){
-        return;
+// So what do we do here?
+// The goal is to append pseudolegal moves into the moveList.
+// How do we do it with knights?
+// we already have the attack tables of the knights
+// we can start with white
+
+// define knights based on the side, then we calculate legal moves where squares are empty
+// simple and operations with ~occupied can do the job and then we can use the 
+    // popabit and add_move function effectively using a while loop.
+    // these can also be known as silent moves
+
+// Next we need to do look at captures.
+// I feel like the knight function is a lot simpler than the pawn function.
+static void generate_knight_move_list(Bitboards *bb, int side, moveList *list) {
+    int opponent = 1 - side;
+    U64 knights = bb->knights[side];
+    U64 empty = ~bb->all_pieces;
+    U64 enemy_pieces = bb->occupied[opponent];
+
+    // silent moves (no captures)
+    while (knights) {
+        // from square
+        int from;
+        popabit(&knights, &from);
+        
+        U64 attacks = knight_attack_table[from];
+        U64 silent_leaps = attacks & empty; // silent leaps will only contain squares without pieces, our piece or not
+        U64 captures = attacks & enemy_pieces;
+
+        // process silent moves
+        while (silent_leaps) {
+            int to_sq; popabit(&silent_leaps, &to_sq);
+            add_move(list, from, to_sq, EMPTY, EMPTY, 0);
+        }
+
+        // process captures
+        while (captures) {
+            int cap_sq; popabit(&captures, &cap_sq);
+            add_move(list, from, cap_sq, get_piece_on_square(bb, cap_sq, opponent), EMPTY, 0);
+        }
+
     }
-    list->count = 0;
 
-    generate_pawn_move_list(bb, side, list);
 
+}
+
+//fills in the attack tables for quick look ups
+void init_all_piece_tables() {
+    init_pawn_attacks();
+    init_knight_attacks();
+    init_king_attacks();
+    init_sliding_rays();
+}
+
+// initialize pawn attack tables
+void init_pawn_attacks() {
+    for (int sq = 0; sq < 64; sq++) {
+        pawn_attacks[WHITE][sq] = 0ULL;
+        pawn_attacks[BLACK][sq] = 0ULL;
+        if ((1ULL << sq) & ~FILE_A_MASK) setbit(pawn_attacks[WHITE][sq], sq + 7);
+        if ((1ULL << sq) & ~FILE_H_MASK) setbit(pawn_attacks[WHITE][sq], sq + 9);
+        if ((1ULL << sq) & ~FILE_H_MASK) setbit(pawn_attacks[BLACK][sq], sq - 7);
+        if ((1ULL << sq) & ~FILE_A_MASK) setbit(pawn_attacks[BLACK][sq], sq - 9);
+    }  
 }
 
 void init_knight_attacks(){
