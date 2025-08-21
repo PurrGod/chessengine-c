@@ -21,7 +21,7 @@ U64 pawn_attacks[2][64];
 
 static void add_move(moveList *list, int from, int to, int captured, int promotion, int flags) {
     // We will expand this later to handle flags
-    list->moves[list->count] = (from) | (to << 6) | (captured << 12) | (promotion << 16) | (flags);
+    list->moves[list->count] = (to) | (from << 6) | (captured << 12) | (promotion << 16) | (flags);
     list->count++;
 }
 
@@ -83,13 +83,13 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
         U64 ne_cap_promo = ne_cap & RANK_8_MASK;
         ne_cap &= ~RANK_8_MASK;
 
-        while(nw_cap) {int to; popabit(&nw_cap, &to); int captured = get_piece_on_square(bb, to, side); add_move(list, to - 7, to, captured, EMPTY, 0);} 
-        while(ne_cap) {int to; popabit(&ne_cap, &to); int captured = get_piece_on_square(bb, to, side); add_move(list, to - 9, to, captured, EMPTY, 0);} 
+        while(nw_cap) {int to; popabit(&nw_cap, &to); int captured = get_piece_on_square(bb, to, opponent); add_move(list, to - 7, to, captured, EMPTY, 0);} 
+        while(ne_cap) {int to; popabit(&ne_cap, &to); int captured = get_piece_on_square(bb, to, opponent); add_move(list, to - 9, to, captured, EMPTY, 0);} 
 
         // promotion capture moves
         while(nw_cap_promo) {
             int to_sq;
-            popabit(&nw_cap_promo, &to_sq); int captured = get_piece_on_square(bb, to_sq, side);
+            popabit(&nw_cap_promo, &to_sq); int captured = get_piece_on_square(bb, to_sq, opponent);
             add_move(list, to_sq - 7, to_sq, captured, wQueen, 0);
             add_move(list, to_sq - 7, to_sq, captured, wRook, 0);
             add_move(list, to_sq - 7, to_sq, captured, wBishop, 0);
@@ -98,7 +98,7 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
 
         while(ne_cap_promo) {
             int to_sq;
-            popabit(&ne_cap_promo, &to_sq); int captured = get_piece_on_square(bb, to_sq, side);
+            popabit(&ne_cap_promo, &to_sq); int captured = get_piece_on_square(bb, to_sq, opponent);
             add_move(list, to_sq - 9, to_sq, captured, wQueen, 0);
             add_move(list, to_sq - 9, to_sq, captured, wRook, 0);
             add_move(list, to_sq - 9, to_sq, captured, wBishop, 0);
@@ -126,7 +126,7 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
 
         if (bb->enPas != NO_SQ) {
             // find captures of black pawn on single push
-            U64 enpass_captures = pawn_attacks[BLACK][bb->enPas];
+            U64 enpass_captures = pawn_attacks[opponent][bb->enPas];
             enpass_captures &= pawns;
 
             while(enpass_captures) {
@@ -177,7 +177,7 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
 
         // En Passant
         if (bb->enPas != NO_SQ) {
-            U64 en_attackers = pawn_attacks[WHITE][bb->enPas] & pawns;
+            U64 en_attackers = pawn_attacks[opponent][bb->enPas] & pawns;
             while (en_attackers) {
                 int from;
                 int to_sq = bb->enPas;
