@@ -19,15 +19,6 @@ U64 king_attack_table[64];
 U64 sliding_rays[8][64];
 U64 pawn_attacks[2][64];
 
-void generate_all_moves(Bitboards *bb, int side, moveList *list) {
-    if (list == NULL){
-        return;
-    }
-    list->count = 0;
-
-    generate_pawn_move_list(bb, side, list);
-
-}
 
 static void add_move(moveList *list, int from, int to, int captured, int promotion, int flags) {
     // We will expand this later to handle flags
@@ -229,11 +220,10 @@ static void generate_knight_move_list(Bitboards *bb, int side, moveList *list) {
             int cap_sq; popabit(&captures, &cap_sq);
             add_move(list, from, cap_sq, get_piece_on_square(bb, cap_sq, opponent), EMPTY, 0);
         }
-
     }
-
-
 }
+
+static void generate_rook_move_list(Bitboards *bb, int side, moveList *list) {}
 
 //fills in the attack tables for quick look ups
 void init_all_piece_tables() {
@@ -355,3 +345,14 @@ void init_sliding_rays(){
     }
 }
 
+void generate_all_moves(Bitboards *bb, int side, moveList *list) {
+    if (list == NULL){
+        return;
+    }
+    list->count = 0;
+
+    generate_pawn_move_list(bb, side, list);
+    generate_knight_move_list(bb, side, list);
+    generate_rook_move_list(bb, side, list);
+
+}
