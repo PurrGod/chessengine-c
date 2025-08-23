@@ -422,6 +422,27 @@ static void generate_queen_move_list(Bitboards *bb, int side, moveList *list) {
 static void generate_king_move_list(Bitboards *bb, int side, moveList *list) {
     int opponent = 1 - side;
     U64 king = bb->kings[side];
+
+    int from_sq = __builtin_ctzll(king);
+    U64 king_attacks = king_attack_table[from_sq];
+
+    U64 valid_moves = king_attacks & ~bb->occupied[side];
+
+    // captures
+    U64 attack_squares = valid_moves & bb->occupied[opponent];
+    U64 silent_moves = valid_moves & ~bb->all_pieces;
+
+    while (attack_squares){
+        int cap_sq;
+        popabit(&attack_squares, &cap_sq);
+        add_move(list, from_sq, cap_sq, get_piece_on_square(bb, cap_sq, opponent), EMPTY, 0);
+    }
+
+    while (silent_moves){
+        int to_sq;
+        popabit(&silent_moves, &to_sq);
+        add_move(list, from_sq, to_sq, EMPTY, EMPTY, 0);
+    }
 }
 
 
