@@ -72,7 +72,7 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
             add_move(list, to_sq - 8, to_sq, EMPTY, wQueen, 0);
             add_move(list, to_sq - 8, to_sq, EMPTY, wRook, 0);
             add_move(list, to_sq - 8, to_sq, EMPTY, wBishop, 0);
-            add_move(list, to_sq - 8, to_sq, EMPTY, wKing, 0);
+            add_move(list, to_sq - 8, to_sq, EMPTY, wKnight, 0);
             
         }
 
@@ -420,6 +420,10 @@ static void generate_queen_move_list(Bitboards *bb, int side, moveList *list) {
 
 // king move gen, pretty simple just check for captures and silent moves
 static void generate_king_move_list(Bitboards *bb, int side, moveList *list) {
+    if (bb->kings[side] == 0) {
+        return;
+    }
+    
     int opponent = 1 - side;
     U64 king = bb->kings[side];
 

@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <string.h>
 #include "definitions.h"
+#include "bitboard.h"
 #include "movegen.h"
 
 
@@ -44,6 +45,8 @@ void test_special_pawn_moves() {
     
     moveList list1;
     generate_all_moves(&bb1, WHITE, &list1);
+    print_move_list(&list1);
+    print_bitboard(bb1.all_pieces); // <-------- how to print? There should be 8 possible promotions but move list is showing 14 moves.
     // Should find 4 promotion pushes (a8=Q,R,B,N) and 4 promotion captures (b8=Q,R,B,N)
     assert(list1.count == 8);
     printf("✅ Promotion generation test passed!\n");
@@ -277,6 +280,85 @@ void test_bishop_moves() {
     }
 }
 
+void test_queen_moves() {
+    printf("--- Testing Queen Move Generation ---\n");
+
+    // Test Case 1: Queen in center of empty board
+    {
+        printf("\n-- Queen Test 1: Center Queen, Empty Board --\n");
+        moveList list;
+        Bitboards bb = {0};
+        setbit(bb.queens[WHITE], D4);
+        bb.occupied[WHITE] = bb.queens[WHITE];
+        bb.all_pieces = bb.occupied[WHITE];
+        
+        generate_all_moves(&bb, WHITE, &list);
+        print_move_list(&list);
+        // A queen on D4 has 14 rook moves + 13 bishop moves = 27 moves
+        assert(list.count == 27);
+        printf("✅ Test 1 passed!\n");
+    }
+
+    // Test Case 2: Queen with blockers
+    {
+        printf("\n-- Queen Test 2: Queen with Blockers --\n");
+        moveList list;
+        Bitboards bb = {0};
+        setbit(bb.queens[WHITE], A1);
+        setbit(bb.pawns[WHITE], C3); // Friendly diagonal blocker
+        setbit(bb.pawns[BLACK], A5); // Enemy straight capture
+        setbit(bb.pawns[BLACK], D1); // Enemy straight capture
+        
+        bb.occupied[WHITE] = (1ULL << A1) | (1ULL << C3);
+        bb.occupied[BLACK] = (1ULL << A5) | (1ULL << D1);
+        bb.all_pieces = bb.occupied[WHITE] | bb.occupied[BLACK];
+        
+        generate_all_moves(&bb, WHITE, &list);
+        print_move_list(&list);
+        // Rook moves: a2,a3,a4,a5(cap) (4) + b1,c1,d1(cap) (3) = 7
+        // Bishop moves: b2 (1)
+        // Total = 8 moves
+        assert(list.count == 9);
+        printf("✅ Test 2 passed!\n");
+    }
+}
+
+void test_king_moves() {
+    printf("--- Testing King Move Generation ---\n");
+
+    {
+        printf("\n-- King Test 1: Center King, Empty Board --\n");
+        moveList list;
+        Bitboards bb = {0};
+        setbit(bb.kings[WHITE], E4);
+        bb.occupied[WHITE] = bb.kings[WHITE];
+        bb.all_pieces = bb.occupied[WHITE];
+        
+        generate_all_moves(&bb, WHITE, &list);
+        print_move_list(&list);
+        assert(list.count == 8);
+        printf("✅ Test 1 passed!\n");
+    }
+
+    {
+        printf("\n-- King Test 2: Corner King with Blockers --\n");
+        moveList list;
+        Bitboards bb = {0};
+        setbit(bb.kings[WHITE], H1);
+        setbit(bb.pawns[WHITE], G1);
+        setbit(bb.rooks[BLACK], G2);
+        
+        bb.occupied[WHITE] = (1ULL << H1) | (1ULL << G1);
+        bb.occupied[BLACK] = (1ULL << G2);
+        bb.all_pieces = bb.occupied[WHITE] | bb.occupied[BLACK];
+        
+        generate_all_moves(&bb, WHITE, &list);
+        print_move_list(&list);
+        assert(list.count == 2);
+        printf("✅ Test 2 passed!\n");
+    }
+}
+
 int main() {
     // Initialize all the attack tables first
     init_knight_attacks();
@@ -290,6 +372,8 @@ int main() {
     test_knight_attack_generation();
     test_rook_moves(); // <-- New test function call
     test_bishop_moves();
+    test_queen_moves();
+    test_king_moves();
 
     printf("\n🎉 All engine tests passed successfully! 🎉\n");
 
