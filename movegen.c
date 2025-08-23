@@ -14,6 +14,17 @@
 
 */
 
+static const int is_positive_direction[8] = {
+    1, // NORTH
+    1, // EAST
+    0, // SOUTH
+    0, // WEST
+    1, // NORTH_EAST
+    0, // SOUTH_EAST
+    0, // SOUTH_WEST
+    1  // NORTH_WEST
+};
+
 U64 knight_attack_table[64];
 U64 king_attack_table[64];
 U64 sliding_rays[8][64];
@@ -278,6 +289,62 @@ static void generate_rook_move_list(Bitboards *bb, int side, moveList *list) {
     }
 }
 
+
+static void generate_bishop_move_list(Bitboards *bb, int side, moveList *list) {
+    int opponent = 1 - side;
+    U64 bishops = bb->bishops[side];
+    U64 empty = ~bb->all_pieces;
+    U64 enemy = bb->occupied[opponent];
+
+    // directions of bishop from positive to negative directions
+    int bishop_directions[] = {NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST};
+    //                         ^4          ^7          ^5          ^6
+
+    while (bishops) {
+        int from_sq;
+        popabit(&bishops, &from_sq);
+
+        // iterate through the directions
+        for (int i = 0; i < 4; i++) {
+            int curr_direction = bishop_directions[i];
+            U64 attack_ray = sliding_rays[curr_direction][from_sq];
+            U64 attack_squares;
+
+            U64 attack_blockers = attack_ray & bb->all_pieces;
+            if (attack_blockers){
+                int first_blocker;
+                if (is_positive_direction[curr_direction]){
+                    first_blocker = __builtin_ctzll(attack_blockers);
+                } else{first_blocker = (63 - (__builtin_clzll(attack_blockers)));}
+                attack_squares = attack_ray ^ sliding_rays[curr_direction][first_blocker];
+            } else {attack_squares = attack_ray;}
+
+            U64 captures = attack_squares & enemy;
+            U64 silent_moves = attack_squares & empty;
+
+            while (captures) {
+                int cap_sq;
+                popabit(&captures, &cap_sq);
+                add_move(list, from_sq, cap_sq, get_piece_on_square(bb, cap_sq, opponent), EMPTY, 0);
+            }
+
+            while (silent_moves) {
+                int to_sq;
+                popabit(&silent_moves, &to_sq);
+                add_move(list, from_sq, to_sq, EMPTY, EMPTY, 0);
+            }
+        }
+    }
+
+}
+
+// Queen move gen, copy paste bishop and rook move gen code
+static void generate_queen_move_list(Bitboards *bb, int side, moveList *list) {}
+
+// king move gen, pretty simple just check for captures and silent moves
+static void generate_king_move_list(Bitboards *bb, int side, moveList *list) {}
+
+
 //fills in the attack tables for quick look ups
 void init_all_piece_tables() {
     init_pawn_attacks();
@@ -407,5 +474,6 @@ void generate_all_moves(Bitboards *bb, int side, moveList *list) {
     generate_pawn_move_list(bb, side, list);
     generate_knight_move_list(bb, side, list);
     generate_rook_move_list(bb, side, list);
+    generate_bishop_move_list(bb, side, list);
 
 }

@@ -98,7 +98,7 @@ void run_tests() {
 
     // 3. Test Initial Board Setup
     printf("Testing initial board setup...\n");
-    Bitboards bb;
+    // Bitboards bb;
     // This function is not defined in the provided files, assuming it exists elsewhere
     // initialize_bitboards(&bb); 
     
@@ -236,6 +236,47 @@ void test_rook_moves() {
 }
 
 
+void test_bishop_moves() {
+    printf("--- Testing Bishop Move Generation ---\n");
+
+    // Test Case 1: Bishop in center of empty board
+    {
+        printf("\n-- Bishop Test 1: Center Bishop, Empty Board --\n");
+        moveList list;
+        Bitboards bb = {0};
+        setbit(bb.bishops[WHITE], E4);
+        bb.occupied[WHITE] = bb.bishops[WHITE];
+        bb.all_pieces = bb.occupied[WHITE];
+        
+        generate_all_moves(&bb, WHITE, &list);
+        print_move_list(&list);
+        assert(list.count == 13);
+        printf("✅ Test 1 passed!\n");
+    }
+
+    // Test Case 2: Bishop with blockers
+    {
+        printf("\n-- Bishop Test 2: Bishop with Blockers --\n");
+        moveList list;
+        Bitboards bb = {0};
+        setbit(bb.bishops[WHITE], C1);
+        setbit(bb.pawns[WHITE], E3); // Friendly blocker
+        setbit(bb.pawns[BLACK], A3); // Enemy capture target
+        
+        bb.occupied[WHITE] = (1ULL << C1) | (1ULL << E3);
+        bb.occupied[BLACK] = (1ULL << A3);
+        bb.all_pieces = bb.occupied[WHITE] | bb.occupied[BLACK];
+        
+        generate_all_moves(&bb, WHITE, &list);
+        print_move_list(&list);
+        // Moves should be: B2 (quiet), A3 (capture), D2 (quiet) = 3 bishop moves
+        // PLUS pawn moves from E3->E4
+        // So, 4 moves total.
+        assert(list.count == 4);
+        printf("✅ Test 2 passed!\n");
+    }
+}
+
 int main() {
     // Initialize all the attack tables first
     init_knight_attacks();
@@ -248,6 +289,7 @@ int main() {
     test_special_pawn_moves();
     test_knight_attack_generation();
     test_rook_moves(); // <-- New test function call
+    test_bishop_moves();
 
     printf("\n🎉 All engine tests passed successfully! 🎉\n");
 
