@@ -22,32 +22,32 @@ static inline uint64_t splitmix64(uint64_t *state) {
 
 
 // initialize all the hashing keys first
-static void init_hash_keys() {
-    int seed = 6939946880679460369; // very special seed
+void init_hash_keys() {
+    uint64_t seed = 6939946880679460369; // very special seed
     // first initialize piece keys
     for (int piece = wPawn; piece <= bKing; piece++){
         for (int sq = 0; sq < 64; sq++){
-            PieceKeys[piece][sq] = splitmix64(seed);
+            PieceKeys[piece][sq] = splitmix64(&seed);
         }
     }
 
     // side key
-    Sidekey = splitmix64(seed);
+    Sidekey = splitmix64(&seed);
 
     // castlekeys, there are 16 combinations since 4 bits
     for (int i = 0; i < 16; i++){
-        CastleKeys[i] = splitmix64(seed);
+        CastleKeys[i] = splitmix64(&seed);
     }
 
     // unique number for enpassant
     for (int f = 0; f < 8; f++) {
-        EPFileKey[f] = splitmix64(seed);
+        EPFileKey[f] = splitmix64(&seed);
     }
 }
 
 // Using all the initialized hash keys, we shall create a final key using the 
 // bitboard properties of a given board state.
-U64 zobrist_hashing_key(Bitboards * bb) {
+U64 zobrist_hashing_posKey(Bitboards * bb) {
     // we take the current boardstate.
     // create a random 64 bit integer.
     U64 key = 0; // this will be our final key for each position
