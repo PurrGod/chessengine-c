@@ -29,8 +29,10 @@ typedef struct{
 #define MOVE_FROM(m)        (((m) >> 6) & 0x3F)
 #define MOVE_CAPTURED(m)    (((m) >> 12) & 0xF)
 #define MOVE_PROMOTION(m)   (((m) >> 16) & 0xF)
+
+// constants
 #define MOVE_IS_ENPASSANT   (1 << 20)
-#define MOVE_IS_CASTLE      (1 << 21)
+#define MOVE_IS_CASTLE      (1 << 21) 
 
 
 //information for undo moves
