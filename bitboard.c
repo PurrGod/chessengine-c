@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "bitboard.h"
+#include "hashkeys.h"
 
 // Initialize bitboards to default starting position
 void initialize_bitboards(Bitboards *bb) {
@@ -16,6 +17,17 @@ void initialize_bitboards(Bitboards *bb) {
 
     // All pieces
     bb->all_pieces = bb->occupied[0] | bb->occupied[1];
+
+    // initializing the board state values
+    bb->side = WHITE;
+    bb->enPas = NO_SQ;
+    bb->ply = 0;
+    bb->hisPly = 0;
+    bb->fiftyMove = 0;
+
+    // all castle rights are enabled in the starting position
+    bb->castlePerm = WKCA | WQCA | BKCA | BQCA;
+    bb->posKey = zobrist_hashing_posKey(bb);
 }
 
 void initialize_pawns(Bitboards *bb){
