@@ -37,18 +37,6 @@ static void add_move(moveList *list, int from, int to, int captured, int promoti
     list->count++;
 }
 
-static int get_piece_on_square(Bitboards *bb, int square, int side) {
-    U64 mask = 1ULL << square;
-    if (bb->pawns[side] & mask) return (side == WHITE) ? wPawn : bPawn;
-    if (bb->knights[side] & mask) return (side == WHITE) ? wKnight : bKnight;
-    if (bb->bishops[side] & mask) return (side == WHITE) ? wBishop : bBishop;
-    if (bb->rooks[side] & mask) return (side == WHITE) ? wRook : bRook;
-    if (bb->queens[side] & mask) return (side == WHITE) ? wQueen : bQueen;
-    if (bb->kings[side] & mask) return (side == WHITE) ? wKing : bKing;
-    return EMPTY;
-}
-
-
 
 
 // helper functions for generating moves to append to move list

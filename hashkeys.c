@@ -1,4 +1,9 @@
+#ifndef HASHKEYS_H
+#define HASHKEYS_H
+
+
 #include "definitions.h"
+#include "hashkeys.h"
 #include "stdlib.h"
 
 //generate position keys to create a unique key for each position
@@ -100,7 +105,8 @@ U64 zobrist_hashing_posKey(Bitboards * bb) {
     // we xor side key if its black turn
     // we determine side by using the # of ply
     // even ply means white, odd is black to move
-    if (bb->ply % 2 != 0){
+
+    if (bb->side == BLACK){
         key ^= Sidekey;
     }
 
@@ -118,3 +124,5 @@ U64 zobrist_hashing_posKey(Bitboards * bb) {
 
     return key;
 }
+
+#endif

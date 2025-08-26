@@ -54,3 +54,34 @@ int cntbits(U64 bb){
     }
     return count;
 }
+
+// get the details of a piece on square
+int get_piece_on_square(Bitboards *bb, int square, int side) {
+    U64 mask = 1ULL << square;
+    if (bb->pawns[side] & mask) return (side == WHITE) ? wPawn : bPawn;
+    if (bb->knights[side] & mask) return (side == WHITE) ? wKnight : bKnight;
+    if (bb->bishops[side] & mask) return (side == WHITE) ? wBishop : bBishop;
+    if (bb->rooks[side] & mask) return (side == WHITE) ? wRook : bRook;
+    if (bb->queens[side] & mask) return (side == WHITE) ? wQueen : bQueen;
+    if (bb->kings[side] & mask) return (side == WHITE) ? wKing : bKing;
+    return EMPTY;
+}
+
+// get the bitboard array of piece on square
+U64* get_piece_bitboard(Bitboards *bb, int piece) {
+    switch (piece) {
+        case wPawn: return &bb->pawns[WHITE];
+        case bPawn: return &bb->pawns[BLACK];
+        case wKnight: return &bb->knights[WHITE];
+        case bKnight: return &bb->knights[BLACK];
+        case wBishop: return &bb->bishops[WHITE];
+        case bBishop: return &bb->bishops[BLACK];
+        case wRook: return &bb->rooks[WHITE];
+        case bRook: return &bb->rooks[BLACK];
+        case wQueen: return &bb->queens[WHITE];
+        case bQueen: return &bb->queens[BLACK];
+        case wKing: return &bb->kings[WHITE];
+        case bKing: return &bb->kings[BLACK];
+        default: return NULL; // Should not happen
+    }
+}

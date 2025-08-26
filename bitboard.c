@@ -87,3 +87,4 @@ void print_square_indices() {
     }
     printf("  a  b  c  d  e  f  g  h\n\n");
 }
+

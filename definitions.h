@@ -41,6 +41,7 @@ typedef struct{
     int castlePerm;
     int enPas;
     int fiftyMove;
+    int side;
     U64 posKey;
 } S_undo;
 // Around 2048 half moves in a game
@@ -57,6 +58,7 @@ typedef struct {
     U64 occupied[2]; // 0 for white's occupied, 1 for black's occupied
     U64 all_pieces;  // All pieces combined (both white and black)
 
+    int side; // easy way to keep track of side, initialize to white first or 0
     int enPas;
     int ply; //number of half moves
     int hisPly;
@@ -182,6 +184,10 @@ int cntbits(U64 bb);
 
 void square_to_algebraic(int square, char *notation);
 int algebraic_to_square(const char *notation);
+
+int get_piece_on_square(Bitboards *bb, int square, int side);
+
+U64 get_piece_bitboard(Bitboards * bb, int piece);
 
 #endif // DEFINITIONS_H
 
