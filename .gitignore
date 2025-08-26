@@ -1,1 +1,14 @@
-.vscode/
+/build/
+/bin/
+*.o
+*.obj
+*.out
+*.exe
+*.a
+*.log
+/.vscode/
+/.idea/
+/.DS_Store
+compile_commands.json
+tags
+*.swp

@@ -146,7 +146,12 @@ void make_move(Bitboards * bb, int m) {
     }
 
     if (m & MOVE_IS_CASTLE) {
-
+        ;
+        // implement castling piece update next
+        // king movement has already been in movegen
+        // we need to implement the movement of rooks
     }
 
+    // end of function we need to update castle perms, enpassant perms
+    // as well as fifty move and finally flip the side -> side ^= 1
 }
