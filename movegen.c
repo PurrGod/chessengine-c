@@ -3,6 +3,7 @@
 #include "definitions.h"
 #include "movegen.h"
 #include <stdio.h>
+#include "attack.h"
 
 /*
 
@@ -435,6 +436,56 @@ static void generate_king_move_list(Bitboards *bb, int side, moveList *list) {
         popabit(&silent_moves, &to_sq);
         add_move(list, from_sq, to_sq, EMPTY, EMPTY, 0);
     }
+
+    // Implementinig castle moves
+    /*  A king can castle if the following is true:
+            1. Neither the rook nor king have moved yet
+            2. The king is not currently under check
+            3. The spaces between the king and rook are empty
+            4. The spaces between the king and rook are not
+                actively being attacked by other pieces.
+    */
+   if (side == WHITE) {
+        // if the white king side castling permission is possible
+        // AND the space between king and rook are empty ex: f1, g1
+        if ((bb->castlePerm & WKCA) && (!bb->all_pieces & (1ULL << F1) && !bb->all_pieces & (1ULL << G1))){
+            // now check for attack squares
+            if (!is_square_attacked(bb, E1, opponent) &&
+                !is_square_attacked(bb, F1, opponent) &&
+                !is_square_attacked(bb, G1, opponent)){
+                    add_move(list, E1, G1, EMPTY, EMPTY, MOVE_IS_CASTLE);
+                }
+        }
+        
+        if ((bb->castlePerm & WQCA) && (!bb->all_pieces & (1ULL << D1) && !bb->all_pieces & (1ULL << C1))){
+            // now check for attack squares
+            if (!is_square_attacked(bb, E1, opponent) &&
+                !is_square_attacked(bb, D1, opponent) &&
+                !is_square_attacked(bb, C1, opponent)){
+                    add_move(list, E1, C1, EMPTY, EMPTY, MOVE_IS_CASTLE);
+                }
+        }
+
+   } else {
+        if ((bb->castlePerm & BKCA) && (!bb->all_pieces & (1ULL << F8) && !bb->all_pieces & (1ULL << G8))){
+            // now check for attack squares
+            if (!is_square_attacked(bb, E8, opponent) &&
+                !is_square_attacked(bb, F8, opponent) &&
+                !is_square_attacked(bb, G8, opponent)){
+                    add_move(list, E8, G8, EMPTY, EMPTY, MOVE_IS_CASTLE);
+                }
+        }
+        
+        if ((bb->castlePerm & BQCA) && (!bb->all_pieces & (1ULL << D8) && !bb->all_pieces & (1ULL << C8))){
+            // now check for attack squares
+            if (!is_square_attacked(bb, E8, opponent) &&
+                !is_square_attacked(bb, D8, opponent) &&
+                !is_square_attacked(bb, C8, opponent)){
+                    add_move(list, E8, C8, EMPTY, EMPTY, MOVE_IS_CASTLE);
+                }
+        }
+   }
+
 }
 
 
