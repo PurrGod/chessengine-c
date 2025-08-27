@@ -187,7 +187,7 @@ int algebraic_to_square(const char *notation);
 
 int get_piece_on_square(Bitboards *bb, int square, int side);
 
-U64 get_piece_bitboard(Bitboards * bb, int piece);
+U64 *get_piece_bitboard(Bitboards * bb, int piece);
 
 #endif // DEFINITIONS_H
 

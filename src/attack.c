@@ -2,7 +2,7 @@
 #include "movegen.h"
 #include "definitions.h"
 
-U64 rook_attacks(int sq, U64 blockers){
+static U64 get_rook_attacks(int sq, U64 blockers){
     U64 attacks = 0ULL;
     int directions[] = {NORTH, SOUTH, EAST, WEST};
     for (int i = 0; i < 4; i++) {
@@ -19,7 +19,7 @@ U64 rook_attacks(int sq, U64 blockers){
     return attacks;
 }
 
-U64 get_bishop_attacks(int sq, U64 blockers) {
+static U64 get_bishop_attacks(int sq, U64 blockers) {
     U64 attacks = 0ULL;
     int directions[] = {NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST};
     for (int i = 0; i < 4; i++) {

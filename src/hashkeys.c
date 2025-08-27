@@ -96,7 +96,7 @@ U64 zobrist_hashing_posKey(Bitboards * bb) {
         while (piece_bitboard) {
             int curr_sq;
             popabit(&piece_bitboard, &curr_sq);
-            int pieceRand = PieceKeys[piece][curr_sq];
+            U64 pieceRand = PieceKeys[piece][curr_sq];
             key ^= pieceRand;
         }
     }
@@ -119,7 +119,7 @@ U64 zobrist_hashing_posKey(Bitboards * bb) {
     }
 
     // xor the castle rights
-    int castlekeyRand = CastleKeys[bb->castlePerm];
+    U64 castlekeyRand = CastleKeys[bb->castlePerm];
     key ^= castlekeyRand;
 
     return key;
