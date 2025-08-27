@@ -10,6 +10,9 @@ void initialize_bitboards(Bitboards *bb);
 void print_bitboard(U64 bitboard);
 void print_square_indices();
 
+void print_board(const Bitboards *bb);
+void parse_fen(Bitboards *bb, const char *fen);
+
 // these followiing functions are to initialize the bitboards
 void initialize_pawns(Bitboards *bb);
 void initialize_knights(Bitboards *bb);

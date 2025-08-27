@@ -446,47 +446,48 @@ static void generate_king_move_list(Bitboards *bb, int side, moveList *list) {
                 actively being attacked by other pieces.
     */
    // In movegen.c, inside generate_king_move_list()
-
-    if (side == WHITE) {
+    if (!is_square_attacked(bb, from_sq, opponent)) {
+        if (side == WHITE) {
         // White Kingside Castle (WKCA)
         // Check if the squares F1 and G1 are empty
-        if ((bb->castlePerm & WKCA) && !(bb->all_pieces & ((1ULL << F1) | (1ULL << G1)))) {
-            if (!is_square_attacked(bb, E1, opponent) &&
-                !is_square_attacked(bb, F1, opponent) &&
-                !is_square_attacked(bb, G1, opponent)) {
-                add_move(list, E1, G1, EMPTY, EMPTY, MOVE_IS_CASTLE);
+            if ((bb->castlePerm & WKCA) && !(bb->all_pieces & ((1ULL << F1) | (1ULL << G1)))) {
+                if (!is_square_attacked(bb, E1, opponent) &&
+                    !is_square_attacked(bb, F1, opponent) &&
+                    !is_square_attacked(bb, G1, opponent)) {
+                    add_move(list, E1, G1, EMPTY, EMPTY, MOVE_IS_CASTLE);
+                }
             }
-        }
-        
-        // White Queenside Castle (WQCA)
-        // Check if the squares D1, C1, and B1 are empty
-        if ((bb->castlePerm & WQCA) && !(bb->all_pieces & ((1ULL << D1) | (1ULL << C1) | (1ULL << B1)))) {
-            if (!is_square_attacked(bb, E1, opponent) &&
-                !is_square_attacked(bb, D1, opponent) &&
-                !is_square_attacked(bb, C1, opponent)) {
-                add_move(list, E1, C1, EMPTY, EMPTY, MOVE_IS_CASTLE);
+            
+            // White Queenside Castle (WQCA)
+            // Check if the squares D1, C1, and B1 are empty
+            if ((bb->castlePerm & WQCA) && !(bb->all_pieces & ((1ULL << D1) | (1ULL << C1) | (1ULL << B1)))) {
+                if (!is_square_attacked(bb, E1, opponent) &&
+                    !is_square_attacked(bb, D1, opponent) &&
+                    !is_square_attacked(bb, C1, opponent)) {
+                    add_move(list, E1, C1, EMPTY, EMPTY, MOVE_IS_CASTLE);
+                }
             }
-        }
-    } else { // side == BLACK
+        } else { // side == BLACK
         // Black Kingside Castle (BKCA)
-        if ((bb->castlePerm & BKCA) && !(bb->all_pieces & ((1ULL << F8) | (1ULL << G8)))) {
-            if (!is_square_attacked(bb, E8, opponent) &&
-                !is_square_attacked(bb, F8, opponent) &&
-                !is_square_attacked(bb, G8, opponent)) {
-                add_move(list, E8, G8, EMPTY, EMPTY, MOVE_IS_CASTLE);
+            if ((bb->castlePerm & BKCA) && !(bb->all_pieces & ((1ULL << F8) | (1ULL << G8)))) {
+                if (!is_square_attacked(bb, E8, opponent) &&
+                    !is_square_attacked(bb, F8, opponent) &&
+                    !is_square_attacked(bb, G8, opponent)) {
+                    add_move(list, E8, G8, EMPTY, EMPTY, MOVE_IS_CASTLE);
+                }
             }
-        }
-        
-        // Black Queenside Castle (BQCA)
-        if ((bb->castlePerm & BQCA) && !(bb->all_pieces & ((1ULL << D8) | (1ULL << C8) | (1ULL << B8)))) {
-            if (!is_square_attacked(bb, E8, opponent) &&
-                !is_square_attacked(bb, D8, opponent) &&
-                !is_square_attacked(bb, C8, opponent)) {
-                add_move(list, E8, C8, EMPTY, EMPTY, MOVE_IS_CASTLE);
+            
+            // Black Queenside Castle (BQCA)
+            if ((bb->castlePerm & BQCA) && !(bb->all_pieces & ((1ULL << D8) | (1ULL << C8) | (1ULL << B8)))) {
+                if (!is_square_attacked(bb, E8, opponent) &&
+                    !is_square_attacked(bb, D8, opponent) &&
+                    !is_square_attacked(bb, C8, opponent)) {
+                    add_move(list, E8, C8, EMPTY, EMPTY, MOVE_IS_CASTLE);
+                }
             }
         }
     }
-
+    
 }
 
 

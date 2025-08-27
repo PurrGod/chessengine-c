@@ -181,7 +181,7 @@ void make_move(Bitboards * bb, int m) {
                 bb->posKey ^= PieceKeys[bRook][D8];
 
                 clearbit(bb->occupied[BLACK], A8);
-                clearbit(bb->occupied[BLACK], D8);
+                setbit(bb->occupied[BLACK], D8);
                 clearbit(bb->all_pieces, A8);
                 setbit(bb->all_pieces, D8);
                 break; 

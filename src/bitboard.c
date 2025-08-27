@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "bitboard.h"
 #include "hashkeys.h"
+#include <ctype.h>
+#include <string.h>
+#include "attack.h"
 
 // Initialize bitboards to default starting position
 void initialize_bitboards(Bitboards *bb) {
@@ -100,3 +103,113 @@ void print_square_indices() {
     printf("  a  b  c  d  e  f  g  h\n\n");
 }
 
+void print_board(const Bitboards *bb) {
+    printf("\n  +---+---+---+---+---+---+---+---+\n");
+    for (int rank = 7; rank >= 0; rank--) {
+        printf("%d |", rank + 1);
+        for (int file = 0; file < 8; file++) {
+            int square = rank * 8 + file;
+            char piece_char = '.'; // Default to empty square
+
+            // Check each piece type for both colors
+            if (isset(bb->pawns[WHITE], square)) piece_char = 'P';
+            else if (isset(bb->knights[WHITE], square)) piece_char = 'N';
+            else if (isset(bb->bishops[WHITE], square)) piece_char = 'B';
+            else if (isset(bb->rooks[WHITE], square)) piece_char = 'R';
+            else if (isset(bb->queens[WHITE], square)) piece_char = 'Q';
+            else if (isset(bb->kings[WHITE], square)) piece_char = 'K';
+            else if (isset(bb->pawns[BLACK], square)) piece_char = 'p';
+            else if (isset(bb->knights[BLACK], square)) piece_char = 'n';
+            else if (isset(bb->bishops[BLACK], square)) piece_char = 'b';
+            else if (isset(bb->rooks[BLACK], square)) piece_char = 'r';
+            else if (isset(bb->queens[BLACK], square)) piece_char = 'q';
+            else if (isset(bb->kings[BLACK], square)) piece_char = 'k';
+
+            printf(" %c |", piece_char);
+        }
+        printf("\n  +---+---+---+---+---+---+---+---+\n");
+    }
+    printf("    a   b   c   d   e   f   g   h\n\n");
+    printf("Side to move: %s\n", (bb->side == WHITE) ? "White" : "Black");
+    printf("Castling: %c%c%c%c\n",
+           (bb->castlePerm & WKCA) ? 'K' : '-',
+           (bb->castlePerm & WQCA) ? 'Q' : '-',
+           (bb->castlePerm & BKCA) ? 'k' : '-',
+           (bb->castlePerm & BQCA) ? 'q' : '-');
+    
+    char enPasSq[3] = "-";
+    if (bb->enPas != NO_SQ) {
+        square_to_algebraic(bb->enPas, enPasSq);
+    }
+    printf("En Passant: %s\n", enPasSq);
+    printf("Position Key: %llx\n", bb->posKey);
+}
+
+
+void parse_fen(Bitboards *bb, const char *fen) {
+    // 1. Clear all bitboards and reset game state
+    memset(bb, 0, sizeof(Bitboards));
+
+    int rank = 7;
+    int file = 0;
+    int fen_index = 0;
+    char c;
+
+    // 2. Parse Piece Placement
+    while ((c = fen[fen_index]) != ' ' && c != '\0') {
+        if (c == '/') {
+            rank--;
+            file = 0;
+        } else if (isdigit(c)) {
+            file += c - '0';
+        } else {
+            int square = rank * 8 + file;
+            if (c == 'P') setbit(bb->pawns[WHITE], square);
+            else if (c == 'N') setbit(bb->knights[WHITE], square);
+            else if (c == 'B') setbit(bb->bishops[WHITE], square);
+            else if (c == 'R') setbit(bb->rooks[WHITE], square);
+            else if (c == 'Q') setbit(bb->queens[WHITE], square);
+            else if (c == 'K') setbit(bb->kings[WHITE], square);
+            else if (c == 'p') setbit(bb->pawns[BLACK], square);
+            else if (c == 'n') setbit(bb->knights[BLACK], square);
+            else if (c == 'b') setbit(bb->bishops[BLACK], square);
+            else if (c == 'r') setbit(bb->rooks[BLACK], square);
+            else if (c == 'q') setbit(bb->queens[BLACK], square);
+            else if (c == 'k') setbit(bb->kings[BLACK], square);
+            file++;
+        }
+        fen_index++;
+    }
+    fen_index++; // Skip the space
+
+    // 3. Parse Active Color
+    bb->side = (fen[fen_index] == 'w') ? WHITE : BLACK;
+    fen_index += 2; // Skip color and space
+
+    // 4. Parse Castling Availability
+    while ((c = fen[fen_index]) != ' ' && c != '\0') {
+        switch (c) {
+            case 'K': bb->castlePerm |= WKCA; break;
+            case 'Q': bb->castlePerm |= WQCA; break;
+            case 'k': bb->castlePerm |= BKCA; break;
+            case 'q': bb->castlePerm |= BQCA; break;
+        }
+        fen_index++;
+    }
+    fen_index++; // Skip the space
+
+    // 5. Parse En Passant Target Square
+    if (fen[fen_index] != '-') {
+        bb->enPas = algebraic_to_square(&fen[fen_index]);
+    } else {
+        bb->enPas = NO_SQ;
+    }
+    // (We skip parsing halfmove and fullmove for now as they aren't needed for Perft)
+
+    // Finally, update aggregate bitboards
+    for (int i = 0; i < 2; i++) {
+        bb->occupied[i] = bb->pawns[i] | bb->knights[i] | bb->bishops[i] | bb->rooks[i] | bb->queens[i] | bb->kings[i];
+    }
+    bb->all_pieces = bb->occupied[WHITE] | bb->occupied[BLACK];
+    bb->posKey = zobrist_hashing_posKey(bb);
+}
