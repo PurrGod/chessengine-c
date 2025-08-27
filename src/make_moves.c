@@ -52,12 +52,11 @@ void make_move(Bitboards * bb, int m) {
     int side = bb->side;
 
     // piece that is moving, we can get that by using the from parameter
-    // use the switch statement to then retrieve the bb array
     int movinPiece = get_piece_on_square(bb, from, side);
     U64 * piece_bb = get_piece_bitboard(bb, movinPiece);
 
     clearbit(*piece_bb, from);
-    clearbit(*piece_bb, to);
+    setbit(*piece_bb, to);
     
     // no matter what move, the from and to bits 
     // have to be updated and the xor needs to done
