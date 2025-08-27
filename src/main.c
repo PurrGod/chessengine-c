@@ -7,6 +7,7 @@
 #include "definitions.h"
 #include "bitboard.h"
 #include "movegen.h"
+#include "perft.h"
 
 
 // Helper function to compare strings for assertions
