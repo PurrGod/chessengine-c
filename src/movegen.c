@@ -141,6 +141,9 @@ static void generate_pawn_move_list(Bitboards *bb, int side, moveList *list){
             int to_sq;
             popabit(&promotions, &to_sq);
             add_move(list, to_sq + 8, to_sq, EMPTY, bQueen, 0);
+            add_move(list, to_sq + 8, to_sq, EMPTY, bBishop, 0);
+            add_move(list, to_sq + 8, to_sq, EMPTY, bRook, 0);
+            add_move(list, to_sq + 8, to_sq, EMPTY, bKnight, 0);
         }
 
         // pawn captures
