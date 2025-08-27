@@ -207,6 +207,14 @@ void make_move(Bitboards * bb, int m) {
             break;
     }
 
+    if (cappt == wRook) {
+        if (to == H1) { bb->castlePerm &= ~WKCA; }
+        else if (to == A1) { bb->castlePerm &= ~WQCA; }
+    } else if (cappt == bRook) {
+        if (to == H8) { bb->castlePerm &= ~BKCA; }
+        else if (to == A8) { bb->castlePerm &= ~BQCA; }
+    }
+
     bb->posKey ^= CastleKeys[bb->castlePerm];
 
     // end of function we need to update castle perms, enpassant perms
