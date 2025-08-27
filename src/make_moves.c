@@ -250,7 +250,7 @@ void unmake_move(Bitboards *bb) {
     bb->hisPly--;
     bb->ply--;
 
-    // --- PHASE 1: RESTORE PREVIOUS STATE ---
+    // RESTORE PREVIOUS STATE
     // Restore all the board state variables from the history array.
 
     int move = bb->history[bb->hisPly].move;
@@ -259,6 +259,9 @@ void unmake_move(Bitboards *bb) {
     bb->enPas = bb->history[bb->hisPly].enPas;
     bb->castlePerm = bb->history[bb->hisPly].castlePerm;
     bb->posKey = bb->history[bb->hisPly].posKey;
+    // assuming all the revesals are accurate, we simply don't need to 
+    // recalculate or reXor all the operations, we can just assign previous
+    // posKey of previous board state.
 
     // extract previous move details
     int from = MOVE_FROM(move);

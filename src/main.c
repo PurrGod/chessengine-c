@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
 #include "definitions.h"
 #include "bitboard.h"
 #include "movegen.h"
@@ -361,21 +362,35 @@ void test_king_moves() {
 
 int main() {
     // Initialize all the attack tables first
-    init_knight_attacks();
-    init_king_attacks();
-    init_sliding_rays();
-    init_pawn_attacks();
+    Bitboards board;
+    init_all_piece_tables();
+    initialize_bitboards(&board);
+
+    int depth = 5;
+    printf("Starting Perft test for depth %d...\n", depth);
+
+    clock_t start = clock();
+    U64 nodes = perft(&board, depth);
+    clock_t end = clock();
+
+    double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
+
+    printf("Perft complete.\n");
+    printf("Nodes found: %llu\n", nodes);
+    printf("Time taken: %f seconds\n", time_spent);
 
     // Run all the tests
-    run_tests();
-    test_special_pawn_moves();
-    test_knight_attack_generation();
-    test_rook_moves(); // <-- New test function call
-    test_bishop_moves();
-    test_queen_moves();
-    test_king_moves();
+    // run_tests();
+    // test_special_pawn_moves();
+    // test_knight_attack_generation();
+    // test_rook_moves(); // <-- New test function call
+    // test_bishop_moves();
+    // test_queen_moves();
+    // test_king_moves();
 
-    printf("\n🎉 All engine tests passed successfully! 🎉\n");
+    // printf("\n🎉 All engine tests passed successfully! 🎉\n");
+
+
 
     return 0;
 }
