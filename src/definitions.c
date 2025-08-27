@@ -5,8 +5,8 @@
 // ranks and files to get the notation 
 // Convert a square index (0-63) to algebraic notation (e.g., 0 -> "a1")
 void square_to_algebraic(int square, char *notation) {
-    notation[0] = 'a' + (square % 8);
-    notation[1] = '1' + (square / 8);
+    notation[0] = (char)('a' + (square % 8));
+    notation[1] = (char)('1' + (square / 8));
     notation[2] = '\0';
 }
 
@@ -46,7 +46,7 @@ U64 popabit(U64 *bb, int *lsb_index) {
 
 // count the # of bits in an integer
 // material evaluation and mobility
-int cntbits(U64 bb){
+unsigned int cntbits(U64 bb){
     unsigned int count = 0;
     while(bb){
         bb &= (bb - 1);

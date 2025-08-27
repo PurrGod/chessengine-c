@@ -367,7 +367,7 @@ int main() {
     init_all_piece_tables();
     initialize_bitboards(&board);
 
-    int depth = 5;
+    int depth = 10;
     printf("Starting Perft test for depth %d...\n", depth);
 
     clock_t start = clock();

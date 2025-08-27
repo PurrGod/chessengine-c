@@ -180,7 +180,7 @@ U64 popabit(U64 *bb, int *lsb_index);
 
 
 //countbit() returns the number of flipped bits
-int cntbits(U64 bb);
+unsigned int cntbits(U64 bb);
 
 void square_to_algebraic(int square, char *notation);
 int algebraic_to_square(const char *notation);

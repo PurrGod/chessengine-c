@@ -79,6 +79,9 @@ void make_move(Bitboards * bb, int m) {
         U64 *capbb = get_piece_bitboard(bb, cappt);
         clearbit(*capbb, to);
 
+        clearbit(bb->occupied[1 - side], to);
+
+
         // update hashing
         bb->posKey ^= PieceKeys[cappt][to];
     }
