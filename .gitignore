@@ -13,3 +13,5 @@ compile_commands.json
 tags
 *.swp
 /scripts/
+arena_chess/
+arenalinux_64bit_3.10beta.tar.gz
