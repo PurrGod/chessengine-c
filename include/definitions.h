@@ -8,6 +8,9 @@
 //unsigned long long
 typedef unsigned long long U64;
 
+#define ctz(x) __builtin_ctzll(x)
+#define clz(x) __builtin_clzll(x)
+
 //max game moves
 #define MAXGAMEMOVES 2048 //half moves
 

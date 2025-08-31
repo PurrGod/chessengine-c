@@ -22,6 +22,7 @@ void init_all_piece_tables(); // calls the above functions
 
 // These functions generate pseudo-legal moves for each piece type
 void generate_all_moves(Bitboards *bb, int side, moveList *list);
+void generate_legal_moves(Bitboards *bb, int side, moveList * list);
 
 
 #endif // MOVEGEN_H

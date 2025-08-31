@@ -4,6 +4,7 @@
 #include "movegen.h"
 #include <stdio.h>
 #include "attack.h"
+#include "make_moves.h"
 
 /*
 
@@ -626,5 +627,32 @@ void generate_all_moves(Bitboards *bb, int side, moveList *list) {
     generate_bishop_move_list(bb, side, list);
     generate_queen_move_list(bb, side, list);
     generate_king_move_list(bb, side, list);
+
+}
+
+
+void generate_legal_moves(Bitboards *bb, int side, moveList * list) {
+    if (list == NULL) {
+        return;
+    }
+
+    list->count = 0;
+
+    moveList pseudolegalmoves;
+    pseudolegalmoves.count = 0;
+
+    generate_all_moves(bb, side, &pseudolegalmoves);
+
+    for (int i = 0; i < pseudolegalmoves.count; i++) {
+        make_move(bb, pseudolegalmoves.moves[i]);
+        int king_sq = ctz(bb->kings[!bb->side]);
+
+        if (!is_square_attacked(bb, king_sq, bb->side)) {
+            list->moves[list->count] = pseudolegalmoves.moves[i];
+            list->count++;
+        }
+        
+        unmake_move(bb);
+    }
 
 }
