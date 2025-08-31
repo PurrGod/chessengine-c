@@ -180,9 +180,43 @@ static const int *eg_pst_tables[6] = {
 };
 
 // weights of the pieces
-static const int game_phase[13] = {0, 0, 1, 1, 2, 4, 0, 0, 1, 1, 2, 4, 0};
+static const int game_phase[13] = {0, 0, 1, 1, 2, 4, 0};
 
 int evaluate(Bitboards * bb) {
-	;
+	int mg_score = 0;
+	int eg_score = 0;
+	int gamephase = 0;
+	int score = 0;
+
+	// iterate through the piece bitboard and then the score
+	for (int piece = wPawn; piece < bKing; piece++) {
+		// get the bitboard for curr piece
+		U64 piece_bb = *get_piece_bitboard(bb, piece);
+		while (piece_bb) {
+			int sq;
+			popabit(&piece_bb, &sq);
+
+			// piece type
+			int pieceType = piece % 6;
+			int color = (pieceType < bPawn) ? WHITE: BLACK;
+
+			if (color == WHITE) {
+				// add scores for both eg and mg for white
+				mg_score += mg_piece_val[piece] + mg_pst_tables[piece][sq];
+				eg_score += eg_piece_val[piece] + eg_pst_tables[piece][sq];
+			} else {
+				// negate scores for eg and mg for black
+				mg_score -= mg_piece_val[piece] + mg_pst_tables[piece][sq];
+				eg_score -= eg_piece_val[piece] + eg_pst_tables[piece][sq];
+			}
+
+			gamephase += game_phase[pieceType];
+		}
+	}
+
+	// average of both endgame and middlegame
+	int final_score = ((mg_score * gamephase) * (eg_score * (24 -gamephase))) / 24;
+
+	return (bb->side == WHITE) ? final_score : -final_score;
   
 }
