@@ -198,21 +198,23 @@ int evaluate(Bitboards * bb) {
 
 			// piece type
 			int pieceType = piece % 6;
-			int color = (pieceType < bPawn) ? WHITE: BLACK;
+			int color = (piece < bPawn) ? WHITE: BLACK;
 
 			if (color == WHITE) {
 				// add scores for both eg and mg for white
-				mg_score += mg_piece_val[piece] + mg_pst_tables[piece][sq];
-				eg_score += eg_piece_val[piece] + eg_pst_tables[piece][sq];
+				mg_score += mg_piece_val[pieceType] + mg_pst_tables[pieceType][sq];
+				eg_score += eg_piece_val[pieceType] + eg_pst_tables[pieceType][sq];
 			} else {
 				// negate scores for eg and mg for black
-				mg_score -= mg_piece_val[piece] + mg_pst_tables[piece][sq];
-				eg_score -= eg_piece_val[piece] + eg_pst_tables[piece][sq];
+				mg_score -= mg_piece_val[pieceType] + mg_pst_tables[pieceType][63 - sq];
+				eg_score -= eg_piece_val[pieceType] + eg_pst_tables[pieceType][63 - sq];
 			}
 
 			gamephase += game_phase[pieceType];
 		}
 	}
+
+  if (gamephase > 24) gamephase = 24;
 
 	// average of both endgame and middlegame
 	score = ((mg_score * gamephase) * (eg_score * (24 -gamephase))) / 24;

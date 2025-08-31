@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #endif
 
+long get_time_ms();
+
 typedef unsigned long long U64;
 
 // A struct to hold all the information controlling the search

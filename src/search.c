@@ -6,7 +6,7 @@
 #include "make_moves.h"
 #include "evaluate.h"
 #include "bitboard.h"
-#include "math.h"
+#include "uci.h"
 #include "time.h"
 
 #define infinity 100000
@@ -15,6 +15,7 @@
 static int max(int a, int b) {
     return (a > b) ? a : b;
 }
+
 
 static void check_time(SearchInfo * info) {
     if (info->timeset == 1 && get_time_ms() > info->stoptime) {
@@ -94,24 +95,32 @@ void search_position(Bitboards *bb, SearchInfo *info) {
     int best_score = -infinity;
     int current_depth;
     
-    // Clear stopping flag and nodes counter
     info->stopped = 0;
     info->nodes = 0;
 
-    // Iterative Deepening Loop
+    // FIX: Find the first legal move to use as a fallback
+    moveList initial_list;
+    generate_all_moves(bb, bb->side, &initial_list);
+    for (int i = 0; i < initial_list.count; i++) {
+        int move = initial_list.moves[i];
+        make_move(bb, move);
+        int king_sq = ctz(bb->kings[!bb->side]);
+        if (!is_square_attacked(bb, king_sq, bb->side)) {
+            best_move = move; // Set the first legal move as the default
+            unmake_move(bb);
+            break;
+        }
+        unmake_move(bb);
+    }
+    
     for (current_depth = 1; current_depth <= info->depth; current_depth++) {
-        int score = negamaxab(bb, -infinity, infinity, current_depth, info);
+        best_score = negamaxab(bb, -infinity, infinity, current_depth, info);
 
-        // If the search was stopped, we don't trust the result of the partial search.
-        // We use the result from the last fully completed depth instead.
         if (info->stopped == 1) {
             break;
         }
-
-        best_score = score;
-        // In a real engine, we'd store the Principal Variation (best line of moves) here.
-        // For now, we need to re-search the root to find the move that gives the best score.
         
+        // This inefficient re-search is still here, but now it has a safe default best_move
         moveList list;
         generate_all_moves(bb, bb->side, &list);
         int alpha = -infinity;
@@ -131,26 +140,11 @@ void search_position(Bitboards *bb, SearchInfo *info) {
             unmake_move(bb);
         }
 
-
-        // Print UCI info after each completed depth
         printf("info score cp %d depth %d nodes %llu time %ld\n",
                best_score, current_depth, info->nodes, get_time_ms() - info->starttime);
     }
     
-    // --- Send the final best move to the GUI ---
     printf("bestmove ");
-    // Helper to print the move in UCI format
-    char from_sq_str[3], to_sq_str[3];
-    square_to_algebraic(MOVE_FROM(best_move), from_sq_str);
-    square_to_algebraic(MOVE_TO(best_move), to_sq_str);
-    printf("%s%s", from_sq_str, to_sq_str);
-
-    int promo_piece = MOVE_PROMOTION(best_move);
-    if (promo_piece) {
-        if (promo_piece == wQueen || promo_piece == bQueen) printf("q");
-        else if (promo_piece == wRook || promo_piece == bRook) printf("r");
-        else if (promo_piece == wBishop || promo_piece == bBishop) printf("b");
-        else if (promo_piece == wKnight || promo_piece == bKnight) printf("n");
-    }
+    print_move_uci(best_move);
     printf("\n");
 }
