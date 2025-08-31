@@ -20,10 +20,11 @@ int main() {
     init_hash_keys();
 
     Bitboards board;
+    SearchInfo info;
     initialize_bitboards(&board); // Initialize to starting position
 
     // Start listening for UCI commands
-    uci_loop(&board);
+    uci_loop(&board, &info);
 
     return 0;
 }

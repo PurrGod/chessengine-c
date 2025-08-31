@@ -26,7 +26,7 @@ static int parse_move_uci(Bitboards *board, const char *uci_move_str) {
         if (MOVE_FROM(move) == from_sq && MOVE_TO(move) == to_sq) {
             int promo_piece = MOVE_PROMOTION(move);
             if (promo_piece != EMPTY) {
-                char promo_char = tolower(uci_move_str[4]);
+                char promo_char = (char)tolower(uci_move_str[4]);
                 if ((promo_char == 'q' && (promo_piece == wQueen || promo_piece == bQueen)) ||
                     (promo_char == 'r' && (promo_piece == wRook || promo_piece == bRook)) ||
                     (promo_char == 'b' && (promo_piece == wBishop || promo_piece == bBishop)) ||

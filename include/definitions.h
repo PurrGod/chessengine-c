@@ -4,15 +4,38 @@
 #define DEFINITIONS_H
 
 #include <stdint.h>
+#include <time.h> // Needed for time management
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/time.h>
+#endif
+
+typedef unsigned long long U64;
+
+// A struct to hold all the information controlling the search
+typedef struct {
+    long starttime;
+    long stoptime;
+    int depth;
+    int timeset;
+    int stopped;
+    
+    // We can add more info here later, like nodes searched
+    U64 nodes;
+
+} SearchInfo;
 
 //unsigned long long
-typedef unsigned long long U64;
 
 #define ctz(x) __builtin_ctzll(x)
 #define clz(x) __builtin_clzll(x)
 
 //max game moves
 #define MAXGAMEMOVES 2048 //half moves
+#define MAX_DEPTH 64 // Max search depth
+
 
 // move list
 typedef struct{

@@ -1,116 +1,149 @@
 // src/uci.c
 
+#include "definitions.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "definitions.h"
+#include <ctype.h>
 #include "uci.h"
 #include "bitboard.h"
-#include "perft.h"
 #include "movegen.h"
 #include "attack.h"
 #include "make_moves.h"
+#include "search.h" 
 
-// Helper to print a move in algebraic notation for debugging
-static void print_move_algebraic(int move) {
-    char from_sq_str[3];
-    char to_sq_str[3];
-    square_to_algebraic(MOVE_FROM(move), from_sq_str);
-    square_to_algebraic(MOVE_TO(move), to_sq_str);
-    printf("%s%s", from_sq_str, to_sq_str);
-
-    int promo_piece = MOVE_PROMOTION(move);
-    if (promo_piece) {
-        switch(promo_piece) {
-            case wQueen: case bQueen: printf("q"); break;
-            case wRook:  case bRook:  printf("r"); break;
-            case wBishop:case bBishop:printf("b"); break;
-            case wKnight:case bKnight:printf("n"); break;
-        }
-    }
-}
-
-// Main function to handle the "go perft" command
-static void parse_go(Bitboards *board, char *input) {
-    int depth = 0;
-    char *arg = strtok(input, " ");
-
-    // Find the "depth" argument
-    while (arg != NULL) {
-        if (strcmp(arg, "depth") == 0) {
-            arg = strtok(NULL, " ");
-            if (arg != NULL) {
-                depth = atoi(arg);
-            }
-            break;
-        }
-        arg = strtok(NULL, " ");
-    }
-
-    if (depth <= 0) {
-        printf("info string Invalid depth\n");
-        return;
-    }
-
-    // This is the core of the perft command for perftree
+// --- Helper Function to parse a UCI move string ---
+static int parse_move_uci(Bitboards *board, const char *uci_move_str) {
     moveList list;
     generate_all_moves(board, board->side, &list);
 
-    printf("Perft results for depth %d:\n", depth);
+    int from_sq = algebraic_to_square(uci_move_str);
+    int to_sq = algebraic_to_square(uci_move_str + 2);
 
     for (int i = 0; i < list.count; i++) {
         int move = list.moves[i];
-        make_move(board, move);
-
-        // Check for legality
-        int king_square = __builtin_ctzll(board->kings[board->side ^ 1]);
-        if (!is_square_attacked(board, king_square, board->side)) {
-            U64 nodes = (depth > 1) ? perft(board, depth - 1) : 1;
-            print_move_algebraic(move);
-            printf(": %llu\n", nodes);
+        if (MOVE_FROM(move) == from_sq && MOVE_TO(move) == to_sq) {
+            int promo_piece = MOVE_PROMOTION(move);
+            if (promo_piece != EMPTY) {
+                if (strlen(uci_move_str) < 5) continue;
+                char promo_char = (char)tolower(uci_move_str[4]);
+                if ((promo_char == 'q' && (promo_piece == wQueen || promo_piece == bQueen)) ||
+                    (promo_char == 'r' && (promo_piece == wRook || promo_piece == bRook)) ||
+                    (promo_char == 'b' && (promo_piece == wBishop || promo_piece == bBishop)) ||
+                    (promo_char == 'n' && (promo_piece == wKnight || promo_piece == bKnight))) {
+                    return move;
+                }
+            } else {
+                return move;
+            }
         }
-        
-        unmake_move(board);
     }
-    // perftree requires a final "nodes" line, but we can omit it for simplicity
-    // as it calculates the total itself.
+    return 0;
 }
 
-// Function to handle the "position" command
+// --- Command Handler for "go" ---
+// This is now much more complex to handle time controls.
+static void parse_go(Bitboards *board, char *input, SearchInfo *info) {
+    int depth = -1, movestogo = 30, movetime = -1;
+    int time = -1, inc = 0;
+    char *ptr = NULL;
+    info->timeset = 0;
+
+    if ((ptr = strstr(input, "depth"))) {
+        depth = atoi(ptr + 6);
+    }
+    if ((ptr = strstr(input, "movetime"))) {
+        movetime = atoi(ptr + 9);
+    }
+    if ((ptr = strstr(input, "wtime")) && board->side == WHITE) {
+        time = atoi(ptr + 6);
+    }
+    if ((ptr = strstr(input, "btime")) && board->side == BLACK) {
+        time = atoi(ptr + 6);
+    }
+    if ((ptr = strstr(input, "winc")) && board->side == WHITE) {
+        inc = atoi(ptr + 5);
+    }
+    if ((ptr = strstr(input, "binc")) && board->side == BLACK) {
+        inc = atoi(ptr + 5);
+    }
+
+    info->starttime = get_time_ms();
+    info->depth = depth;
+
+    if (movetime != -1) {
+        time = movetime;
+        movestogo = 1;
+    }
+
+    if (time != -1) {
+        info->timeset = 1;
+        time /= movestogo;
+        time -= 50; // A small buffer
+        info->stoptime = info->starttime + time + inc;
+    }
+
+    if (depth == -1) {
+        info->depth = MAX_DEPTH;
+    }
+
+    // This is the new call to the main search driver
+    search_position(board, info);
+}
+
+// --- Command Handler for "position" ---
 static void parse_position(Bitboards *board, char *input) {
-    char *fen_string = NULL;
+    char *fen_string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    char *token;
 
-    if (strncmp(input, "startpos", 8) == 0) {
-        fen_string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    } else if (strncmp(input, "fen", 3) == 0) {
-        fen_string = input + 4; // Point to the start of the actual FEN
+    token = strtok(input, " ");
+    if (strcmp(token, "startpos") == 0) {
+        token = strtok(NULL, " ");
+    } else if (strcmp(token, "fen") == 0) {
+        char fen_buffer[200] = {0};
+        token = strtok(NULL, " ");
+        while (token != NULL && strcmp(token, "moves") != 0) {
+            strcat(fen_buffer, token);
+            strcat(fen_buffer, " ");
+            token = strtok(NULL, " ");
+        }
+        fen_string = fen_buffer;
     }
 
-    if (fen_string) {
-        parse_fen(board, fen_string);
+    parse_fen(board, fen_string);
+
+    if (token != NULL && strcmp(token, "moves") == 0) {
+        token = strtok(NULL, " ");
+        while (token != NULL) {
+            int move = parse_move_uci(board, token);
+            if (move) {
+                make_move(board, move);
+            }
+            token = strtok(NULL, " ");
+        }
     }
 }
 
-// The main loop that listens for and processes UCI commands
-void uci_loop(Bitboards *board) {
-    char input[2048];
-
-    setbuf(stdout, NULL); // Ensure output is not buffered
+// --- Main UCI Loop ---
+void uci_loop(Bitboards *board, SearchInfo *info) {
+    char input[4096];
+    setbuf(stdout, NULL);
 
     while (fgets(input, sizeof(input), stdin)) {
-        input[strcspn(input, "\n")] = 0; // Remove newline
+        input[strcspn(input, "\n")] = 0;
 
         if (strncmp(input, "uci", 3) == 0) {
-            printf("id name MyChessEngine\n");
-            printf("id author YourName\n");
+            printf("id name PurrfectEngine\n");
+            printf("id author Purrgod\n");
             printf("uciok\n");
         } else if (strncmp(input, "isready", 7) == 0) {
             printf("readyok\n");
         } else if (strncmp(input, "position", 8) == 0) {
             parse_position(board, input + 9);
-        } else if (strncmp(input, "go perft", 8) == 0) {
-            parse_go(board, input + 3); // Pass "perft depth X"
+        } else if (strncmp(input, "go", 2) == 0) {
+            parse_go(board, input + 3, info);
         } else if (strncmp(input, "quit", 4) == 0) {
+            info->stopped = 1;
             break;
         }
     }

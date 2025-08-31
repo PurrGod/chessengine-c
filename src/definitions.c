@@ -1,6 +1,23 @@
 #include <stdio.h>
 #include "definitions.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/time.h>
+#endif
+
+// gets the current ime?
+long get_time_ms() {
+#ifdef _WIN32
+    return GetTickCount();
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (long)(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+#endif
+}
+
 // using C's implicit ASCII conversion we can use the calculations from 
 // ranks and files to get the notation 
 // Convert a square index (0-63) to algebraic notation (e.g., 0 -> "a1")

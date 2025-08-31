@@ -114,6 +114,7 @@ int main(int argc, char *argv[]) {
 
                 printf("  Result: Engine(%12llu) | Correct(%12llu) | Diff(%10lld) | %s\n",
                        engine_nodes, expected_nodes, diff, (diff == 0) ? "✅ OK" : "❌ FAIL");
+                printf("Time taken: %ld", end-start);
             }
         }
         position_count++;
