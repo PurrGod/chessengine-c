@@ -3,7 +3,7 @@
 
 #include "definitions.h"
 
-static int negamaxab(Bitboards * bb, int depth);
+static int negamaxab(Bitboards * bb, int alpha, int beta, int depth);
 
 int find_bestmove(Bitboards * bb, int depth);
 

@@ -215,8 +215,8 @@ int evaluate(Bitboards * bb) {
 	}
 
 	// average of both endgame and middlegame
-	int final_score = ((mg_score * gamephase) * (eg_score * (24 -gamephase))) / 24;
+	score = ((mg_score * gamephase) * (eg_score * (24 -gamephase))) / 24;
 
-	return (bb->side == WHITE) ? final_score : -final_score;
+	return (bb->side == WHITE) ? score : -score;
   
 }
