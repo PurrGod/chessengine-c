@@ -11,6 +11,7 @@
 #include "attack.h"
 #include "make_moves.h"
 #include "search.h" 
+#include "evaluate.h"
 
 // --- Helper Function to print a move in UCI format ---
 // e.g., "e2e4", "a7a8q"
@@ -65,26 +66,27 @@ static int parse_move_uci(Bitboards *board, const char *uci_move_str) {
 static void parse_go(Bitboards *board, char *input, SearchInfo *info) {
     int depth = -1, movestogo = 30, movetime = -1;
     int time = -1, inc = 0;
-    char *ptr = NULL;
-    info->timeset = 0;
 
-    if ((ptr = strstr(input, "depth"))) {
-        depth = atoi(ptr + 6);
-    }
-    if ((ptr = strstr(input, "movetime"))) {
-        movetime = atoi(ptr + 9);
-    }
-    if ((ptr = strstr(input, "wtime")) && board->side == WHITE) {
-        time = atoi(ptr + 6);
-    }
-    if ((ptr = strstr(input, "btime")) && board->side == BLACK) {
-        time = atoi(ptr + 6);
-    }
-    if ((ptr = strstr(input, "winc")) && board->side == WHITE) {
-        inc = atoi(ptr + 5);
-    }
-    if ((ptr = strstr(input, "binc")) && board->side == BLACK) {
-        inc = atoi(ptr + 5);
+    info->timeset = 0;
+    
+    char *token;
+    // Break the input string by spaces
+    token = strtok(input, " "); // "go"
+
+    while((token = strtok(NULL, " "))) {
+        if (strcmp(token, "depth") == 0) {
+            depth = atoi(strtok(NULL, " "));
+        } else if (strcmp(token, "movetime") == 0) {
+            movetime = atoi(strtok(NULL, " "));
+        } else if (strcmp(token, "wtime") == 0 && board->side == WHITE) {
+            time = atoi(strtok(NULL, " "));
+        } else if (strcmp(token, "btime") == 0 && board->side == BLACK) {
+            time = atoi(strtok(NULL, " "));
+        } else if (strcmp(token, "winc") == 0 && board->side == WHITE) {
+            inc = atoi(strtok(NULL, " "));
+        } else if (strcmp(token, "binc") == 0 && board->side == BLACK) {
+            inc = atoi(strtok(NULL, " "));
+        }
     }
 
     info->starttime = get_time_ms();
@@ -98,8 +100,15 @@ static void parse_go(Bitboards *board, char *input, SearchInfo *info) {
     if (time != -1) {
         info->timeset = 1;
         time /= movestogo;
-        time -= 50; // A small buffer
-        info->stoptime = info->starttime + time + inc;
+        time += inc; // Add increment
+        
+        // A smarter time buffer: use a small buffer, but don't let it make the time negative.
+        long buffer = 20; // 20ms buffer
+        if (time <= buffer) {
+            info->stoptime = info->starttime + time - 5; // Use a tiny 5ms buffer if time is very short
+        } else {
+            info->stoptime = info->starttime + time - buffer;
+        }
     }
 
     if (depth == -1) {
@@ -174,6 +183,12 @@ void uci_loop(Bitboards *board, SearchInfo *info) {
             parse_position(board, "position startpos");
         } else if (strncmp(input, "go", 2) == 0) {
             parse_go(board, input, info);
+        } else if (strncmp(input, "printfen", 8) == 0) {
+            char fen[200];
+            board_to_fen(board, fen);
+            printf("%s\n", fen);
+        } else if (strncmp(input, "eval", 4) == 0) {
+            printf("Eval score: %d\n", evaluate(board));
         } else if (strncmp(input, "quit", 4) == 0) {
             info->stopped = 1;
             break;
@@ -184,4 +199,3 @@ void uci_loop(Bitboards *board, SearchInfo *info) {
         }
     }
 }
-

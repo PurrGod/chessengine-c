@@ -23,14 +23,13 @@ MAIN_FILES := \
     $(SRC_DIR)/perft_adapter.c \
     $(SRC_DIR)/perft_test.c \
     $(SRC_DIR)/perft_debugger.c \
-    $(SRC_DIR)/uci.c
 
 # Common source files are ALL .c files EXCEPT the ones with a main() function
 COMMON_SRCS := $(filter-out $(MAIN_FILES), $(wildcard $(SRC_DIR)/*.c))
 COMMON_OBJS := $(patsubst $(SRC_DIR)/%.c,$(BLD_DIR)/%.o,$(COMMON_SRCS))
 
 # Specific sources for each target
-ENGINE_SRC := $(SRC_DIR)/main.c $(SRC_DIR)/uci.c
+ENGINE_SRC := $(SRC_DIR)/main.c
 ENGINE_OBJ := $(patsubst $(SRC_DIR)/%.c,$(BLD_DIR)/%.o,$(ENGINE_SRC))
 
 ADAPTER_SRC := $(SRC_DIR)/perft_adapter.c

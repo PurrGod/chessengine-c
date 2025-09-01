@@ -157,30 +157,20 @@ static const int eg_QueenPST[64] = {
 // Evaluate functions
 // tapered position eval function:
 
-// give value to pieces:
+// Material values for: Pawn, Knight, Bishop, Rook, Queen, King
 static const int mg_piece_val[6] = {100, 310, 350, 500, 900, 0};
 static const int eg_piece_val[6] = {100, 310, 350, 500, 900, 0};
 
+// Game phase contribution for: Pawn, Knight, Bishop, Rook, Queen, King
+static const int game_phase_inc[6] = {0, 1, 1, 2, 4, 0};
+
 static const int *mg_pst_tables[6] = {
-    mg_PawnPST,
-    mg_KnightPST,
-    mg_BishopPST,
-    mg_RookPST,
-    mg_QueenPST,
-    mg_king_pst
+    mg_PawnPST, mg_KnightPST, mg_BishopPST, mg_RookPST, mg_QueenPST, mg_king_pst
 };
 
 static const int *eg_pst_tables[6] = {
-    eg_PawnPST,
-    eg_KnightPST,
-    eg_BishopPST,
-    eg_RookPST,
-    eg_QueenPST,
-    eg_king_pst
+    eg_PawnPST, eg_KnightPST, eg_BishopPST, eg_RookPST, eg_QueenPST, eg_king_pst
 };
-
-// weights of the pieces
-static const int game_phase[13] = {0, 0, 1, 1, 2, 4, 0};
 
 int evaluate(Bitboards * bb) {
 	int mg_score = 0;
@@ -188,37 +178,37 @@ int evaluate(Bitboards * bb) {
 	int gamephase = 0;
 	int score = 0;
 
-	// iterate through the piece bitboard and then the score
-	for (int piece = wPawn; piece < bKing; piece++) {
-		// get the bitboard for curr piece
+	// FIX: Loop must include the Black King (<= bKing)
+	for (int piece = wPawn; piece <= bKing; piece++) {
 		U64 piece_bb = *get_piece_bitboard(bb, piece);
 		while (piece_bb) {
 			int sq;
 			popabit(&piece_bb, &sq);
 
-			// piece type
-			int pieceType = piece % 6;
-			int color = (piece < bPawn) ? WHITE: BLACK;
+			// FIX: Correctly map piece enum to 0-indexed array
+			// (wPawn=1 -> 0), (wKnight=2 -> 1), ..., (bKing=12 -> 5)
+			int pieceType = (piece - 1) % 6;
+			int color = (piece < bPawn) ? WHITE : BLACK;
 
 			if (color == WHITE) {
-				// add scores for both eg and mg for white
 				mg_score += mg_piece_val[pieceType] + mg_pst_tables[pieceType][sq];
 				eg_score += eg_piece_val[pieceType] + eg_pst_tables[pieceType][sq];
 			} else {
-				// negate scores for eg and mg for black
+				// Mirror square for Black's PST lookup
 				mg_score -= mg_piece_val[pieceType] + mg_pst_tables[pieceType][63 - sq];
 				eg_score -= eg_piece_val[pieceType] + eg_pst_tables[pieceType][63 - sq];
 			}
 
-			gamephase += game_phase[pieceType];
+			gamephase += game_phase_inc[pieceType];
 		}
 	}
 
-  if (gamephase > 24) gamephase = 24;
+    // Clamp gamephase to a max of 24
+    if (gamephase > 24) gamephase = 24;
 
-	// average of both endgame and middlegame
-	score = ((mg_score * gamephase) * (eg_score * (24 -gamephase))) / 24;
+	// Correct tapered eval formula (addition, not multiplication)
+	score = ((mg_score * gamephase) + (eg_score * (24 - gamephase))) / 24;
 
+    // Return score from the perspective of the side to move
 	return (bb->side == WHITE) ? score : -score;
-  
 }

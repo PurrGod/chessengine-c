@@ -213,3 +213,83 @@ void parse_fen(Bitboards *bb, const char *fen) {
     bb->all_pieces = bb->occupied[WHITE] | bb->occupied[BLACK];
     bb->posKey = zobrist_hashing_posKey(bb);
 }
+
+
+// In src/bitboard.c
+
+// Helper to get the character for a piece on a square
+static char get_piece_char(const Bitboards *bb, int square) {
+    if (isset(bb->pawns[WHITE], square)) return 'P';
+    if (isset(bb->knights[WHITE], square)) return 'N';
+    if (isset(bb->bishops[WHITE], square)) return 'B';
+    if (isset(bb->rooks[WHITE], square)) return 'R';
+    if (isset(bb->queens[WHITE], square)) return 'Q';
+    if (isset(bb->kings[WHITE], square)) return 'K';
+    if (isset(bb->pawns[BLACK], square)) return 'p';
+    if (isset(bb->knights[BLACK], square)) return 'n';
+    if (isset(bb->bishops[BLACK], square)) return 'b';
+    if (isset(bb->rooks[BLACK], square)) return 'r';
+    if (isset(bb->queens[BLACK], square)) return 'q';
+    if (isset(bb->kings[BLACK], square)) return 'k';
+    return ' '; // Should not happen on an occupied square
+}
+
+void board_to_fen(Bitboards *bb, char *fen_str) {
+    int empty_count = 0;
+    int char_index = 0;
+
+    // 1. Piece Placement
+    for (int rank = 7; rank >= 0; rank--) {
+        for (int file = 0; file < 8; file++) {
+            int square = rank * 8 + file;
+            if (isset(bb->all_pieces, square)) {
+                if (empty_count > 0) {
+                    fen_str[char_index++] = (char)('0' + empty_count);
+                    empty_count = 0;
+                }
+                fen_str[char_index++] = get_piece_char(bb, square);
+            } else {
+                empty_count++;
+            }
+        }
+        if (empty_count > 0) {
+            fen_str[char_index++] = (char)('0' + empty_count);
+        }
+        if (rank > 0) {
+            fen_str[char_index++] = '/';
+        }
+        empty_count = 0;
+    }
+
+    // 2. Active Color
+    fen_str[char_index++] = ' ';
+    fen_str[char_index++] = (bb->side == WHITE) ? 'w' : 'b';
+    fen_str[char_index++] = ' ';
+
+    // 3. Castling Availability
+    int castle_char_written = 0;
+    if (bb->castlePerm & WKCA) { fen_str[char_index++] = 'K'; castle_char_written = 1; }
+    if (bb->castlePerm & WQCA) { fen_str[char_index++] = 'Q'; castle_char_written = 1; }
+    if (bb->castlePerm & BKCA) { fen_str[char_index++] = 'k'; castle_char_written = 1; }
+    if (bb->castlePerm & BQCA) { fen_str[char_index++] = 'q'; castle_char_written = 1; }
+    if (!castle_char_written) {
+        fen_str[char_index++] = '-';
+    }
+    fen_str[char_index++] = ' ';
+
+    // 4. En Passant Target Square
+    if (bb->enPas != NO_SQ) {
+        square_to_algebraic(bb->enPas, &fen_str[char_index]);
+        char_index += 2;
+    } else {
+        fen_str[char_index++] = '-';
+    }
+    fen_str[char_index++] = ' ';
+
+    // 5. Halfmove Clock and Fullmove Number (using placeholders)
+    // We can use sprintf for simplicity here.
+    sprintf(&fen_str[char_index], "%d %d", bb->fiftyMove, (bb->ply / 2) + 1);
+    
+    // Null terminate the final string
+    // sprintf does this for us.
+}

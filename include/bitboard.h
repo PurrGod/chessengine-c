@@ -20,6 +20,6 @@ void initialize_bishops(Bitboards *bb);
 void initialize_rook(Bitboards *bb);
 void initialize_queens(Bitboards *bb);
 void initialize_kings(Bitboards *bb);
-
+void board_to_fen(Bitboards *bb, char *fen_str);
 
 #endif

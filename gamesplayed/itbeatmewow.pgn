@@ -1,0 +1,32 @@
+[Event "Computer chess game"]
+[Site "akhilesh-avidya"]
+[Date "2025.08.31"]
+[Round "?"]
+[White "purrfection"]
+[Black "akhilesh_hyphae"]
+[Result "1-0"]
+[BlackElo "2400"]
+[ECO "A00"]
+[Opening "Van Kruij's Opening"]
+[Time "17:22:49"]
+[WhiteElo "2000"]
+[Termination "normal"]
+[PlyCount "83"]
+[WhiteType "program"]
+[BlackType "human"]
+
+1. e3 {-0.30/6 0} e5 2. Nc3 {-0.60/6 2} d5 3. Nf3 {-0.30/6 3} e4 4. Ng1
+{-1.00/6 4} Nc6 5. Bb5 {-1.32/6 4} Bd7 6. Nxd5 {-0.25/6 2} a6 7. Be2
+{-0.45/6 6} Nf6 8. Bc4 {-0.75/6 5} Nxd5 9. Bxd5 {-0.49/6 5} f5 10. Ne2
+{-0.13/6 3} Qg5 11. O-O {-0.42/6 7} Bd6 12. Nd4 {-0.48/6 6} Ne7 13. Be6
+{-0.35/6 6} Bxe6 14. Nxe6 {-0.97/6 8} Qh6 15. Qh5+ {-0.32/6 6} Kd7 16. Qxh6
+{-0.90/6 53} gxh6 17. Nf4 {-1.00/6 11} Ng6 18. Nxg6 {-0.15/6 1} hxg6 19. d3
+{-0.30/6 0} Ke7 20. d4 {+0.14/6 0} h5 21. f3 {+0.37/6 0} exf3 22. gxf3
+{+0.17/6 0} h4 23. e4 {+0.60/6 0} fxe4 24. fxe4 {+0.61/6 0} Raf8 25. Rxf8
+{+0.98/6 0} Rxf8 26. e5 {+1.80/6 0} Bxe5 27. dxe5 {+1.86/6 0} Ke6 28. Bg5
+{+2.08/6 0} Kxe5 29. Bxh4 {+3.01/6 0} Rf4 30. Bg3 {+4.20/6 0} Ke4 31. Re1+
+{+4.66/6 0} Kf3 32. Rf1+ {+8.11/6 0} Ke2 33. Bxf4 {+8.51/6 0} c6 34. b4
+{+8.68/6 0} b5 35. a3 {+9.74/6 0} g5 36. Bxg5 {+10.69/6 0} c5 37. bxc5
+{+10.80/6 0} b4 38. axb4 {+13.06/6 0} a5 39. c6 {+16.58/6 0} axb4 40. c7
+{+M500/6 0} b3 41. c8=Q {+M500/6 0} bxc2 42. Qxc2# {+M500/6 0} 1-0
+

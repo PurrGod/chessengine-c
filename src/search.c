@@ -74,9 +74,10 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
             alpha = max(alpha, score);
 
 
-        } 
+        } else {
+            unmake_move(bb);
+        }
 
-        unmake_move(bb);
     }
     
     // handle legal and checkmates
@@ -98,7 +99,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
     info->stopped = 0;
     info->nodes = 0;
 
-    // FIX: Find the first legal move to use as a fallback
+    // Find the first legal move to use as a fallback
     moveList initial_list;
     generate_all_moves(bb, bb->side, &initial_list);
     for (int i = 0; i < initial_list.count; i++) {
@@ -116,15 +117,18 @@ void search_position(Bitboards *bb, SearchInfo *info) {
     for (current_depth = 1; current_depth <= info->depth; current_depth++) {
         best_score = negamaxab(bb, -infinity, infinity, current_depth, info);
 
+        // If the search was stopped, don't trust the results of the second search loop.
+        // The existing best_move from the previous completed depth is more reliable.
         if (info->stopped == 1) {
             break;
         }
         
-        // This inefficient re-search is still here, but now it has a safe default best_move
+        // This loop finds the best move for the depth we just completed
         moveList list;
         generate_all_moves(bb, bb->side, &list);
         int alpha = -infinity;
         int beta = infinity;
+        int iteration_best_move = best_move; // Use a temporary variable for this depth
 
         for (int i = 0; i < list.count; i++) {
             int move = list.moves[i];
@@ -134,14 +138,22 @@ void search_position(Bitboards *bb, SearchInfo *info) {
                 int temp_score = -negamaxab(bb, -beta, -alpha, current_depth - 1, info);
                 if (temp_score > alpha) {
                     alpha = temp_score;
-                    best_move = move;
+                    iteration_best_move = move; // Only update the temporary variable
                 }
             }
             unmake_move(bb);
         }
 
+        // The search for this depth completed without being stopped,
+        // so we can now safely update our main best_move.
+        best_move = iteration_best_move;
+
         printf("info score cp %d depth %d nodes %llu time %ld\n",
                best_score, current_depth, info->nodes, get_time_ms() - info->starttime);
+    }
+
+    if (best_move == 0) {
+        return;
     }
     
     printf("bestmove ");
