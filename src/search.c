@@ -63,20 +63,11 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
             int score = -negamaxab(bb, -beta, -alpha, depth - 1, info);
             unmake_move(bb);
 
-            if (info->stopped == 1) {
-                return 0;
-            }
-
-            if (score >= beta) {
-                return beta;
-            }
-
+            if (info->stopped == 1) {return 0;}
+            if (score >= beta) {return beta;}
             alpha = max(alpha, score);
 
-
-        } else {
-            unmake_move(bb);
-        }
+        } else {unmake_move(bb);}
 
     }
     
@@ -99,24 +90,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
     info->stopped = 0;
     info->nodes = 0;
 
-    // Find the first legal move to use as a fallback
-    moveList initial_list;
-    generate_all_moves(bb, bb->side, &initial_list);
-    for (int i = 0; i < initial_list.count; i++) {
-        int move = initial_list.moves[i];
-        make_move(bb, move);
-        int king_sq = ctz(bb->kings[!bb->side]);
-        if (!is_square_attacked(bb, king_sq, bb->side)) {
-            best_move = move; // Set the first legal move as the default
-            unmake_move(bb);
-            break;
-        }
-        unmake_move(bb);
-    }
-    
     for (current_depth = 1; current_depth <= info->depth; current_depth++) {
-        best_score = negamaxab(bb, -infinity, infinity, current_depth, info);
-
         // If the search was stopped, don't trust the results of the second search loop.
         // The existing best_move from the previous completed depth is more reliable.
         if (info->stopped == 1) {
@@ -147,9 +121,13 @@ void search_position(Bitboards *bb, SearchInfo *info) {
         // The search for this depth completed without being stopped,
         // so we can now safely update our main best_move.
         best_move = iteration_best_move;
+        best_score = alpha; // alpha is usually the highest score.
+
+        int uci_score = best_score;
+        if (bb->side == BLACK) {uci_score = -best_score;}
 
         printf("info score cp %d depth %d nodes %llu time %ld\n",
-               best_score, current_depth, info->nodes, get_time_ms() - info->starttime);
+               uci_score, current_depth, info->nodes, get_time_ms() - info->starttime);
     }
 
     if (best_move == 0) {
