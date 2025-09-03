@@ -145,7 +145,7 @@ static const int mg_QueenPST[64] = {
 // combining the power of a rook and bishop to control the open board.
 static const int eg_QueenPST[64] = {
   -30, -20, -10, -10, -10, -10, -20, -30,
-  -20, -10,   0,   5,   5,   0, -10, -20,
+  -20, -10,   0,   5,   5,   0, -10, -20,                  
   -10,   0,  10,  15,  15,  10,   0, -10,
   -10,   5,  15,  20,  20,  15,   5, -10,
   -10,   0,  15,  20,  20,  15,   0, -10,
