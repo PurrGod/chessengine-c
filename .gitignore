@@ -15,3 +15,12 @@ tags
 /scripts/
 arena_chess/
 arenalinux_64bit_3.10beta.tar.gz
+
+# Ignore compiled executables
+chess_engine
+perft_adapter
+perft_debugger
+perft_test
+
+# Ignore all PGN files in the gamesplayed directory
+gamesplayed/*.pgn
