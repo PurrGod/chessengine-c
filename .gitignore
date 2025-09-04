@@ -24,3 +24,4 @@ perft_test
 
 # Ignore all PGN files in the gamesplayed directory
 gamesplayed/*.pgn
+gamesplayed/

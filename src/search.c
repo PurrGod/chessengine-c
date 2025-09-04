@@ -23,7 +23,7 @@ static const int mvv_lva[5][5] = {
   {   7900,  7690,   7650,   7500,  7100 }, // Victim: Rook
   {  14300, 14090,  14050,  13900, 13500 }, // Victim: Queen
 };
-static const int piece_val[6] = {100, 310, 350, 500, 900, 0};
+
 
 
 typedef struct {
@@ -87,8 +87,58 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
         }
     }
 
+    // MVV - LVA process
+    capture_moves capList[64];
+    int capcount = 0;
+    for  (int i = 0; i < list.count; i++) {
+        int m = list.moves[i];
+        // if move = captures, store it in new array
+        if (MOVE_CAPTURED(m) != EMPTY) {
+            capList[capcount].move = m;
+            // score it
+            int victim_piece = MOVE_CAPTURED(m);
+            int attack_piece = get_piece_on_square(bb, MOVE_FROM(m), bb->side);
+
+            // convert from piece enum to 0-5
+            int victim_idx = (victim_piece - 1) % 6;
+            int attack_idx = (attack_piece - 1) % 6;
+
+            // add score to capture struct
+            capList[capcount].move_score = mvv_lva[victim_idx][attack_idx];
+
+            capcount++;
+        }
+    }
+
+    // sort the moves
+    sort_moves(capList, capcount);
+
+    // call negamax on these if legal
+    for (int i = 0; i < capcount; i++) {
+        int m = capList[i].move;
+        make_move(bb, m);
+
+        int king_sq = ctz(bb->kings[!bb->side]);
+        if (!is_square_attacked(bb, king_sq, bb->side)) {
+
+            legal_moves++;
+            int score = -negamaxab(bb, -beta, -alpha, depth - 1, info);
+            unmake_move(bb);
+
+            if (info->stopped == 1) {return 0;}
+            if (score >= beta) {return beta;}
+            alpha = max(alpha, score);
+
+        } else {unmake_move(bb);}
+    }
+
+
     for (int i = 0; i < list.count; i++) {
         int move = list.moves[i];
+        // check if move is capture: skip it since we already checked those early
+        if (MOVE_CAPTURED(move) != EMPTY) {
+            continue;
+        }
         make_move(bb, move);
 
         int king_sq = ctz(bb->kings[!bb->side]);
@@ -103,6 +153,7 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
             alpha = max(alpha, score);
 
         } else {unmake_move(bb);}
+
 
     }
     
@@ -142,7 +193,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
     
 
     for (current_depth = 1; current_depth <= info->depth; current_depth++) {
-        printf("--- Depth %d ---\n", current_depth);
+        // printf("--- Depth %d ---\n", current_depth);
 
         // This loop finds the best move for the depth we just completed
         moveList list;
@@ -153,7 +204,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
 
         for (int i = 0; i < list.count; i++) {
             int move = list.moves[i];
-            U64 nodes_before_move = info->nodes;
+            // U64 nodes_before_move = info->nodes;
             make_move(bb, move);
             int king_sq = ctz(bb->kings[!bb->side]);
             if(!is_square_attacked(bb, king_sq, bb->side)) {
@@ -164,9 +215,9 @@ void search_position(Bitboards *bb, SearchInfo *info) {
                 }
             }
             unmake_move(bb);
-            U64 nodes_for_this_move = info->nodes - nodes_before_move;
+            // U64 nodes_for_this_move = info->nodes - nodes_before_move;
             print_move_uci(move);
-            printf(": %llu nodes\n", nodes_for_this_move);
+            // printf(": %llu nodes\n", nodes_for_this_move);
 
         }
     
@@ -184,7 +235,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
         } else {
             // If the search was stopped, break out of the main loop immediately.
             // Do NOT update best_move, preserving the result from the last completed depth.
-            printf("Search stopped, fallback to the best move from depth %d, ", current_depth - 1);
+            // printf("Search stopped, fallback to the best move from depth %d, ", current_depth - 1);
             break;
         }
     }
