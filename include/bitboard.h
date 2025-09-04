@@ -7,7 +7,8 @@
 void initialize_bitboards(Bitboards *bb);
 
 // Debug function to print a bitboard
-void print_bitboard(U64 bitboard);
+void print_bitboard(U64 bb);
+// void iwroteprintbitboard(U64 bb);
 void print_square_indices();
 
 void print_board(const Bitboards *bb);

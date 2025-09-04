@@ -11,6 +11,41 @@
 
 #define infinity 100000
 
+// mvv-lva tables:
+// [victim][attacker] piecetype - 1
+// score is victim - attacker
+//    higher score means attacker piece is of low value
+//    negative score means attack piece is higher value than victim piece
+static const int mvv_lva[5][5] = {
+  {   1500,  1290,   1250,   1100,   700 }, // Victim: Pawn
+  {   4860,  4650,   4610,   4460,  4060 }, // Victim: Knight
+  {   5500,  5290,   5250,   5100,  4700 }, // Victim: Bishop
+  {   7900,  7690,   7650,   7500,  7100 }, // Victim: Rook
+  {  14300, 14090,  14050,  13900, 13500 }, // Victim: Queen
+};
+static const int piece_val[6] = {100, 310, 350, 500, 900, 0};
+
+
+typedef struct {
+    int move;
+    int move_score;
+} capture_moves;
+
+// do inplace insertion sort
+static void sort_moves(capture_moves * list, int count) {
+    for (int i = 1; i < count; i++) {
+        capture_moves key = list[i];
+        int j = i - 1;
+
+        while (j >= 0 && list[j].move_score < key.move_score) {
+            list[j + 1] = list[j];
+            j = j - 1;
+        }
+
+        list[j + 1] = key;
+
+    }
+}
 
 static int max(int a, int b) {
     return (a > b) ? a : b;
@@ -107,6 +142,8 @@ void search_position(Bitboards *bb, SearchInfo *info) {
     
 
     for (current_depth = 1; current_depth <= info->depth; current_depth++) {
+        printf("--- Depth %d ---\n", current_depth);
+
         // This loop finds the best move for the depth we just completed
         moveList list;
         generate_all_moves(bb, bb->side, &list);
@@ -116,6 +153,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
 
         for (int i = 0; i < list.count; i++) {
             int move = list.moves[i];
+            U64 nodes_before_move = info->nodes;
             make_move(bb, move);
             int king_sq = ctz(bb->kings[!bb->side]);
             if(!is_square_attacked(bb, king_sq, bb->side)) {
@@ -126,6 +164,10 @@ void search_position(Bitboards *bb, SearchInfo *info) {
                 }
             }
             unmake_move(bb);
+            U64 nodes_for_this_move = info->nodes - nodes_before_move;
+            print_move_uci(move);
+            printf(": %llu nodes\n", nodes_for_this_move);
+
         }
     
         // Only update the official best_move and score if the search for this
@@ -142,6 +184,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
         } else {
             // If the search was stopped, break out of the main loop immediately.
             // Do NOT update best_move, preserving the result from the last completed depth.
+            printf("Search stopped, fallback to the best move from depth %d, ", current_depth - 1);
             break;
         }
     }

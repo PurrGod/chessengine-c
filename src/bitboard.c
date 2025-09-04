@@ -293,3 +293,27 @@ void board_to_fen(Bitboards *bb, char *fen_str) {
     // Null terminate the final string
     // sprintf does this for us.
 }
+
+// void iwroteprintbitboard(U64 bb) {
+//     // 0 0 0 0 0 0 0 0 
+//     // 0 0 0 0 0 0 0 0
+//     // ^a1
+//     // 1 1 1 1 1 1 1 1  1 1 1 1 1 1 1 1  <- a1
+//     // print from white perspective
+//     // a8 to h8
+//     // row by row printed as follows:
+//     // 56 - 63
+
+//     for (int rank = 8; rank > 0; rank--) {
+//         for (int file = 0; file < 8; file++) {
+//             int index = (rank - 1) * 8 + file;
+//             U64 mask = (1ULL << index);
+//             if (bb & mask) {
+//                 printf("1 ");
+//             } else {printf("0 ");}
+
+//         }
+
+//         printf("\n");
+//     }
+// }

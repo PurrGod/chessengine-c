@@ -19,9 +19,11 @@ int main() {
     init_all_piece_tables();
     init_hash_keys();
 
+    
     Bitboards board;
     SearchInfo info;
     initialize_bitboards(&board); // Initialize to starting position
+    // iwroteprintbitboard(board.queens[BLACK] | board.queens[WHITE]);
 
     // Start listening for UCI commands
     uci_loop(&board, &info);
