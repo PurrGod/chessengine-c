@@ -1,6 +1,6 @@
-# PurrfectEngine
+# Dvaita
 
-PurrfectEngine is a **UCI-compliant chess engine** written from scratch in C. It is designed for performance, featuring a **bitboard board representation** and an efficient **alpha-beta search algorithm**. The engine is built with a modular architecture to allow for continuous development and the integration of more advanced search and evaluation techniques.
+Dvaita is a **UCI-compliant chess engine** written from scratch in C. It is designed for performance, featuring a **bitboard board representation** and an efficient **alpha-beta search algorithm**. The engine is built with a modular architecture to allow for continuous development and the integration of more advanced search and evaluation techniques.
 
 *(Here you can add a screenshot or GIF of your engine playing in a GUI like Arena)*
 
@@ -52,7 +52,7 @@ Planned features to significantly increase the engine’s playing strength:
 
 ## ⚠️ How to Build and Run
 
-PurrfectEngine is ready to be compiled and used with any UCI-compatible GUI.
+Dvaita is ready to be compiled and used with any UCI-compatible GUI.
 
 ### Prerequisites
 - A C compiler (e.g., `gcc`)  
@@ -79,7 +79,7 @@ The engine will start and wait for UCI commands.
 1. Open your favorite chess GUI (e.g., Arena).  
 2. Find the option to install a new engine.  
 3. When prompted, select the `chess_engine` executable file.  
-4. The GUI will now be able to use PurrfectEngine to play and analyze games.  
+4. The GUI will now be able to use Dvaita to play and analyze games.  
 
 **To clean the build files, run:**
 ```bash
