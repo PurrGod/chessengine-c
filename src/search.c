@@ -63,15 +63,11 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
         check_time(info);
     }
 
-    if (info->stopped == 1) {
-        return 0;
-    }
+    if (info->stopped == 1) {return 0;}
 
+    if (bb->ply > 0 && is_repetition(bb)) {return 0;}
 
-    if (depth == 0) {
-        info->nodes++;
-        return evaluate(bb);
-    }
+    if (depth == 0) {info->nodes++; return evaluate(bb);}
 
     // generate all pl moves
     moveList list;
@@ -120,8 +116,8 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
 
         int king_sq = ctz(bb->kings[!bb->side]);
         if (!is_square_attacked(bb, king_sq, bb->side)) {
-
             legal_moves++;
+
             int score = -negamaxab(bb, -beta, -alpha, depth - 1, info);
             unmake_move(bb);
 
@@ -132,7 +128,7 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
         } else {unmake_move(bb);}
     }
 
-
+    // quiet moves
     for (int i = 0; i < list.count; i++) {
         int move = list.moves[i];
         // check if move is capture: skip it since we already checked those early
@@ -143,8 +139,15 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
 
         int king_sq = ctz(bb->kings[!bb->side]);
         if (!is_square_attacked(bb, king_sq, bb->side)) {
-
             legal_moves++;
+            if (is_repetition(bb)) {
+                unmake_move(bb);
+
+                if (0 > beta) {return beta;}
+                if (0 > alpha) {alpha = 0;}
+                continue;
+            }
+
             int score = -negamaxab(bb, -beta, -alpha, depth - 1, info);
             unmake_move(bb);
 
