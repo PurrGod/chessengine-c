@@ -8,6 +8,7 @@
 #include "hashkeys.h"
 #include "bitboard.h"
 #include "movegen.h"
+#include "hashtable.h"
 #include "perft.h"
 #include "uci.h"
 

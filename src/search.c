@@ -6,7 +6,7 @@
 #include "make_moves.h"
 #include "evaluate.h"
 #include "bitboard.h"
-#include "hashtable.c"
+#include "hashtable.h"
 #include "uci.h"
 #include "time.h"
 

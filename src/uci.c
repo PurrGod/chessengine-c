@@ -64,13 +64,12 @@ static int parse_move_uci(Bitboards *board, const char *uci_move_str) {
 
 // --- Command Handler for "go" ---
 static void parse_go(Bitboards *board, char *input, SearchInfo *info) {
-    int depth = -1, movestogo = 30, movetime = -1;
-    int time = -1, inc = 0;
+    int depth = -1, movetime = -1;
+    long time = -1, inc = 0;
 
     info->timeset = 0;
     
     char *token;
-    // Break the input string by spaces
     token = strtok(input, " "); // "go"
 
     while((token = strtok(NULL, " "))) {
@@ -79,43 +78,51 @@ static void parse_go(Bitboards *board, char *input, SearchInfo *info) {
         } else if (strcmp(token, "movetime") == 0) {
             movetime = atoi(strtok(NULL, " "));
         } else if (strcmp(token, "wtime") == 0 && board->side == WHITE) {
-            time = atoi(strtok(NULL, " "));
+            time = atol(strtok(NULL, " ")); // Use atol for long
         } else if (strcmp(token, "btime") == 0 && board->side == BLACK) {
-            time = atoi(strtok(NULL, " "));
+            time = atol(strtok(NULL, " ")); // Use atol for long
         } else if (strcmp(token, "winc") == 0 && board->side == WHITE) {
-            inc = atoi(strtok(NULL, " "));
+            inc = atol(strtok(NULL, " "));
         } else if (strcmp(token, "binc") == 0 && board->side == BLACK) {
-            inc = atoi(strtok(NULL, " "));
+            inc = atol(strtok(NULL, " "));
         }
+    }
+
+    if (depth != -1) {
+        info->depth = depth;
+    } else {
+        info->depth = MAX_DEPTH; 
     }
 
     info->starttime = get_time_ms();
-    info->depth = depth;
 
-    if (movetime != -1) {
-        time = movetime;
-        movestogo = 1;
-    }
+    // If movetime is specified, it's the highest priority.
+    if (movetime != -1) {time = movetime;}
 
+    // If we have time information (wtime/btime), calculate our search time.
     if (time != -1) {
         info->timeset = 1;
-        time /= movestogo;
-        time += inc; // Add increment
+        long time_for_move;
+
+        // Use 1/25th of our remaining time.
+        time_for_move = time / 25;
         
-        // A smarter time buffer: use a small buffer, but don't let it make the time negative.
-        long buffer = 20; // 20ms buffer
-        if (time <= buffer) {
-            info->stoptime = info->starttime + time - 5; // Use a tiny 5ms buffer if time is very short
-        } else {
-            info->stoptime = info->starttime + time - buffer;
+        time_for_move += inc / 2;
+
+        // A simple safety buffer: never use more than 1/4 of your total time on one move.
+        if (time_for_move >= time) {
+            time_for_move = time - 50; 
+        }
+
+        info->stoptime = info->starttime + time_for_move;
+
+    } else {
+        if (depth == -1) {
+            info->depth = 8; // A reasonable default search depth
         }
     }
-
-    if (depth == -1) {
-        info->depth = MAX_DEPTH;
-    }
     
-    printf("info time:%d start:%ld stop:%ld depth:%d timeset:%d\n",
+    printf("info time:%ld start:%ld stop:%ld depth:%d timeset:%d\n",
            time, info->starttime, info->stoptime, info->depth, info->timeset);
 
     search_position(board, info);

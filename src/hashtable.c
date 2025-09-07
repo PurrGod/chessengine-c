@@ -2,14 +2,16 @@
 #include "hashtable.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 TT_entry *transposition_table = NULL;
-long numEntries = 0;
+size_t numEntries = 0;
 
+void clear_TT();
 
 void init_hashtable(int megabytes) {
-    long bytes = megabytes * 1024 * 1024;
-    int numEntries = bytes / sizeof(TT_entry);
+    size_t bytes = (size_t)megabytes * 1024 * 1024;
+    numEntries = bytes / sizeof(TT_entry);
    
     if (transposition_table != NULL){free(transposition_table);}
 
@@ -22,7 +24,7 @@ void init_hashtable(int megabytes) {
         exit(1); 
     } else {
         printf("info string Transposition table initialized with %ld entries.\n", numEntries);
-        clear_transposition_table();
+        clear_TT();
     }
 
 }
