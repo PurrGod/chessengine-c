@@ -363,3 +363,25 @@ void unmake_move(Bitboards *bb) {
         }
     }
 }
+
+
+// is repetition check:
+// return true if count = 3
+// iterate backwards through the history array.
+
+int is_repetition(Bitboards * bb) {
+    int count = 1;
+    U64 currPosKey = bb->posKey;
+    for (int i = bb->hisPly - 1; i >=0; i--) {
+        // go backwards through array
+        if (bb->history[i].posKey == currPosKey){count++;}
+        if (count >= 3){return 1;}
+
+        // check for 50 rule move reset
+        if (bb->history[i].fiftyMove == 0) {
+            break;
+        }
+    }
+
+    return 0; // if the loop finishes, we haven't found the repetition -> return draw.
+}

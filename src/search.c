@@ -193,7 +193,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
     
 
     for (current_depth = 1; current_depth <= info->depth; current_depth++) {
-        // printf("--- Depth %d ---\n", current_depth);
+        printf("--- Depth %d ---\n", current_depth);
 
         // This loop finds the best move for the depth we just completed
         moveList list;
@@ -204,7 +204,7 @@ void search_position(Bitboards *bb, SearchInfo *info) {
 
         for (int i = 0; i < list.count; i++) {
             int move = list.moves[i];
-            // U64 nodes_before_move = info->nodes;
+            U64 nodes_before_move = info->nodes;
             make_move(bb, move);
             int king_sq = ctz(bb->kings[!bb->side]);
             if(!is_square_attacked(bb, king_sq, bb->side)) {
@@ -215,9 +215,9 @@ void search_position(Bitboards *bb, SearchInfo *info) {
                 }
             }
             unmake_move(bb);
-            // U64 nodes_for_this_move = info->nodes - nodes_before_move;
+            U64 nodes_for_this_move = info->nodes - nodes_before_move;
             print_move_uci(move);
-            // printf(": %llu nodes\n", nodes_for_this_move);
+            printf(": %llu nodes\n", nodes_for_this_move);
 
         }
     

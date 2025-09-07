@@ -26,7 +26,6 @@ static const int eg_PawnPST[64] = {
   150, 150, 150, 150, 150, 150, 150, 150
 };
 
-
 // Middlegame Knight: Values are high for central outposts, reflecting its power in a complex position.
 static const int mg_KnightPST[64] = {
   -50, -40, -30, -30, -30, -30, -40, -50,
@@ -51,7 +50,6 @@ static const int eg_KnightPST[64] = {
   -40, -20,   0,   0,   0,   0, -20, -40,
   -50, -40, -30, -30, -30, -30, -40, -50
 };
-
 
 // Middlegame Rook: Small bonuses for staying on the back rank, ready to seize a file.
 // Penalizes rooks on bad squares like a3 or h6.
@@ -153,7 +151,6 @@ static const int eg_QueenPST[64] = {
   -20, -10,   0,   0,   0,   0, -10, -20,
   -30, -20, -10, -10, -10, -10, -20, -30
 };
-
 
 
 // Evaluate functions
