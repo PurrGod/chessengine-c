@@ -30,6 +30,11 @@ static const int mvv_lva[5][5] = {
 //     return (a > b) ? a : b;
 // }
 
+int killer_moves[MAX_DEPTH][2];
+
+void clear_killer_moves() {
+    memset(killer_moves, 0, sizeof(killer_moves));
+}
 
 static void check_time(SearchInfo * info) {
     if (info->timeset == 1 && get_time_ms() > info->stoptime) {
@@ -58,7 +63,13 @@ static void score_and_sort(moveList * list, Bitboards * bb, int hash_move){
             // add score to capture struct
             moves_score[i] = mvv_lva[victim_idx][attack_idx] + 10000;
         } else {
-            moves_score[i] = 0; // quiet move score is 0
+            if (move == killer_moves[bb->ply][0]) {
+                moves_score[i] = 9000;
+            } else if (move == killer_moves[bb->ply][1]) {
+                moves_score[i] = 8000;
+            } else {
+                moves_score[i] = 0; // quiet move score is 0
+            }
         }
     }
 
@@ -209,7 +220,8 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
 
     score_and_sort(&list, bb, hash_move);
 
-    // quiet moves
+    // Sorted Move list
+    // Hash move -> Captures -> Quiet Moves
     for (int i = 0; i < list.count; i++) {
         int move = list.moves[i];
         make_move(bb, move);
@@ -242,8 +254,15 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
 
             if (info->stopped == 1) {return 0;}
             if (score >= beta) {
+                // if move was quiet, add to killer move
+                if (MOVE_CAPTURED(move) == EMPTY && MOVE_PROMOTION(move) == EMPTY) {
+                    killer_moves[bb->ply][1] = killer_moves[bb->ply][0];
+                    killer_moves[bb->ply][0] = move;
+                }
+                
                 // store in tt
                 store_in_tt(bb->posKey, depth, beta, list.moves[i], FLAG_LOWER_BOUND);
+
                 return beta;            
             }
 

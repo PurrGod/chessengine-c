@@ -188,9 +188,11 @@ void uci_loop(Bitboards *board, SearchInfo *info) {
             printf("readyok\n");
         } else if (strncmp(input, "position", 8) == 0) {
             clear_TT();
+            clear_killer_moves();
             parse_position(board, input);
         } else if (strncmp(input, "ucinewgame", 10) == 0) {
             clear_TT();
+            clear_killer_moves();
             parse_position(board, "position startpos");
         } else if (strncmp(input, "go", 2) == 0) {
             parse_go(board, input, info);

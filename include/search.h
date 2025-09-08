@@ -5,5 +5,5 @@
 
 
 void search_position(Bitboards *bb, SearchInfo *info);
-
+void clear_killer_moves();
 #endif
