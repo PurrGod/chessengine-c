@@ -45,9 +45,12 @@ TT_entry *probe_TT(U64 posKey) {
 }
 
 void store_in_tt(U64 posKey, int depth, int beta, int move, int flag) {
-    transposition_table->b_move = move;
-    transposition_table->depth = (char)depth;
-    transposition_table->posKey = posKey;
-    transposition_table->score = beta;
-    transposition_table->pv_flag = (char)flag;
+    size_t index = posKey % numEntries;
+    TT_entry *entry = &transposition_table[index];
+
+    entry->b_move = move;
+    entry->depth = (char)depth;
+    entry->posKey = posKey;
+    entry->score = beta;
+    entry->pv_flag = (char)flag;
 }
