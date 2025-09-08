@@ -83,6 +83,80 @@ static void score_and_sort(moveList * list, Bitboards * bb, int hash_move){
 
 }
 
+typedef struct {
+    int move;
+    int move_score;
+    int flag;
+} capture_moves;
+
+// do inplace insertion sort
+static void sort_moves(capture_moves * list, int count) {
+    for (int i = 1; i < count; i++) {
+        capture_moves key = list[i];
+        int j = i - 1;
+
+        while (j >= 0 && list[j].move_score < key.move_score) {
+            list[j + 1] = list[j];
+            j = j - 1;
+        }
+
+        list[j + 1] = key;
+
+    }
+}
+
+static int qsearch(Bitboards * bb, int alpha, int beta, SearchInfo * info) {
+    info->nodes++;
+    
+    int score = evaluate(bb);
+    int best_value = score;
+    if (best_value >= beta) {return best_value;}
+    if (best_value > alpha) {alpha = best_value;}
+
+    moveList list;
+    generate_all_moves(bb, bb->side, &list);
+    capture_moves cap_list[64];
+    int capcount = 0;
+    for  (int i = 0; i < list.count; i++) {
+        int m = list.moves[i];
+        // if move = captures, store it in new array
+        if (MOVE_CAPTURED(m) != EMPTY) {
+            cap_list[capcount].move = m;
+            // score it
+            int victim_piece = MOVE_CAPTURED(m);
+            int attack_piece = get_piece_on_square(bb, MOVE_FROM(m), bb->side);
+
+            // convert from piece enum to 0-5
+            int victim_idx = (victim_piece - 1) % 6;
+            int attack_idx = (attack_piece - 1) % 6;
+
+            // add score to capture struct
+            cap_list[capcount].move_score = mvv_lva[victim_idx][attack_idx];
+
+            capcount++;
+        }
+    }
+
+    sort_moves(cap_list, capcount);
+
+    for (int i = 0; i < capcount; i++) {
+        make_move(bb, cap_list[i].move);
+        int king_sq = ctz(bb->kings[!bb->side]);
+        if (is_square_attacked(bb, king_sq, bb->side)) {
+            unmake_move(bb);
+            continue;
+        }
+        score = -qsearch(bb, -beta, -alpha, info);
+        unmake_move(bb);
+
+        if (score >= beta) {return beta;}
+        if (score > alpha) {alpha = score;}
+    }
+    
+    return best_value;
+
+}
+
 int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info) {
     if ((info->nodes & 2047) == 0) {
         check_time(info);
@@ -115,7 +189,7 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
         
     }
     
-    if (depth == 0) {info->nodes++; return evaluate(bb);}
+    if (depth == 0) {return qsearch(bb, alpha, beta, info);}
     
     int best_move_found = 0;
 
@@ -282,70 +356,5 @@ void search_position(Bitboards *bb, SearchInfo *info) {
 
 
 /*
-    typedef struct {
-        int move;
-        int move_score;
-    } capture_moves;
 
-    // do inplace insertion sort
-    static void sort_moves(capture_moves * list, int count) {
-        for (int i = 1; i < count; i++) {
-            capture_moves key = list[i];
-            int j = i - 1;
-
-            while (j >= 0 && list[j].move_score < key.move_score) {
-                list[j + 1] = list[j];
-                j = j - 1;
-            }
-
-            list[j + 1] = key;
-
-        }
-    }
-
-
-    // MVV - LVA process
-    capture_moves capList[64];
-    int capcount = 0;
-    for  (int i = 0; i < list.count; i++) {
-        int m = list.moves[i];
-        // if move = captures, store it in new array
-        if (MOVE_CAPTURED(m) != EMPTY) {
-            capList[capcount].move = m;
-            // score it
-            int victim_piece = MOVE_CAPTURED(m);
-            int attack_piece = get_piece_on_square(bb, MOVE_FROM(m), bb->side);
-
-            // convert from piece enum to 0-5
-            int victim_idx = (victim_piece - 1) % 6;
-            int attack_idx = (attack_piece - 1) % 6;
-
-            // add score to capture struct
-            capList[capcount].move_score = mvv_lva[victim_idx][attack_idx];
-
-            capcount++;
-        }
-    }
-
-    // sort the moves
-    sort_moves(capList, capcount);
-
-        // call negamax on these if legal
-    for (int i = 0; i < capcount; i++) {
-        int m = capList[i].move;
-        make_move(bb, m);
-
-        int king_sq = ctz(bb->kings[!bb->side]);
-        if (!is_square_attacked(bb, king_sq, bb->side)) {
-            legal_moves++;
-
-            int score = -negamaxab(bb, -beta, -alpha, depth - 1, info);
-            unmake_move(bb);
-
-            if (info->stopped == 1) {return 0;}
-            if (score >= beta) {return beta;}
-            alpha = max(alpha, score);
-
-        } else {unmake_move(bb);}
-    }
 */
