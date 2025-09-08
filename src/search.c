@@ -7,6 +7,8 @@
 #include "evaluate.h"
 #include "bitboard.h"
 #include "hashtable.h"
+#include <string.h>
+#include "hashkeys.h"
 #include "uci.h"
 #include "time.h"
 
@@ -198,6 +200,30 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
             }
         }
         
+    }
+
+    // Null Move pruning
+    const int R = 3;
+    int side = bb->side;
+    int king_sq = ctz(bb->kings[bb->side]);
+    if (depth >= (R + 1) && !is_square_attacked(bb, king_sq, !bb->side) && (bb->ply > 0 )) {
+        int piece_count = cntbits(bb->rooks[side] | bb->queens[side] | bb->knights[side] | bb->bishops[side]);
+
+        if (piece_count > 2) {
+            bb->side ^= 1;
+            bb->posKey ^= Sidekey;
+            bb->ply++;
+
+            int null_score = -negamaxab(bb, -beta, -beta + 1, depth - 1 - R, info);
+
+            bb->ply--;
+            bb->posKey ^= Sidekey;
+            bb->side ^= 1;
+
+            if (null_score >= beta) {
+                return beta;
+            }
+        }
     }
     
     if (depth == 0) {return qsearch(bb, alpha, beta, info);}
