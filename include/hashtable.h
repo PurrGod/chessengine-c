@@ -21,5 +21,7 @@ enum PV_Flags {
 
 void init_hashtable(int megabytes);
 void clear_TT();
+TT_entry *probe_TT(U64 poskey);
+void store_in_tt(U64 posKey, int depth, int beta, int move, int flag);
 
 #endif

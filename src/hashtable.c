@@ -32,3 +32,22 @@ void init_hashtable(int megabytes) {
 void clear_TT(){
     if (transposition_table != NULL){memset(transposition_table, 0, numEntries * sizeof(TT_entry));}
 }
+
+TT_entry *probe_TT(U64 posKey) {
+    size_t index = posKey % numEntries;
+    TT_entry * entree = &transposition_table[index];
+
+    if (posKey == entree->posKey) {
+        return entree;
+    }
+    
+    return NULL;
+}
+
+void store_in_tt(U64 posKey, int depth, int beta, int move, int flag) {
+    transposition_table->b_move = move;
+    transposition_table->depth = (char)depth;
+    transposition_table->posKey = posKey;
+    transposition_table->score = beta;
+    transposition_table->pv_flag = (char)flag;
+}

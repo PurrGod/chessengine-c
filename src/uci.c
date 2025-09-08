@@ -12,6 +12,7 @@
 #include "make_moves.h"
 #include "search.h" 
 #include "evaluate.h"
+#include "hashtable.h"
 
 // --- Helper Function to print a move in UCI format ---
 // e.g., "e2e4", "a7a8q"
@@ -172,8 +173,8 @@ void uci_loop(Bitboards *board, SearchInfo *info) {
     char input[4096];
     setbuf(stdout, NULL);
 
-    printf("id name PurrfectEngine\n");
-    printf("id author Purrgod\n");
+    printf("id name Dvaita\n");
+    printf("id author Akhilesh N\n");
     printf("uciok\n");
 
     while (fgets(input, sizeof(input), stdin)) {
@@ -185,8 +186,10 @@ void uci_loop(Bitboards *board, SearchInfo *info) {
         if (strncmp(input, "isready", 7) == 0) {
             printf("readyok\n");
         } else if (strncmp(input, "position", 8) == 0) {
+            clear_TT();
             parse_position(board, input);
         } else if (strncmp(input, "ucinewgame", 10) == 0) {
+            clear_TT();
             parse_position(board, "position startpos");
         } else if (strncmp(input, "go", 2) == 0) {
             parse_go(board, input, info);
@@ -200,8 +203,8 @@ void uci_loop(Bitboards *board, SearchInfo *info) {
             info->stopped = 1;
             break;
         } else if (strncmp(input, "uci", 3) == 0) {
-            printf("id name PurrfectEngine\n");
-            printf("id author Purrgod\n");
+            printf("id name Dvaita\n");
+            printf("id author Akhilesh N\n");
             printf("uciok\n");
         }
     }
