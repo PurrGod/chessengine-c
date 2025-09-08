@@ -98,22 +98,23 @@ static void parse_go(Bitboards *board, char *input, SearchInfo *info) {
     info->starttime = get_time_ms();
 
     // If movetime is specified, it's the highest priority.
-    if (movetime != -1) {time = movetime;}
+    if (movetime != -1) {
+        info->stoptime = info->starttime + movetime;
+        info->timeset = 1;
+    }
 
     // If we have time information (wtime/btime), calculate our search time.
-    if (time != -1) {
+    else if (time != -1) {
         info->timeset = 1;
         long time_for_move;
 
-        // Use 1/25th of our remaining time.
-        time_for_move = time / 25;
-        
-        time_for_move += inc / 2;
+        int moves_to_go = 50 - (board->ply / 2);
 
-        // A simple safety buffer: never use more than 1/4 of your total time on one move.
-        if (time_for_move >= time) {
-            time_for_move = time - 50; 
-        }
+        if (moves_to_go < 15) {moves_to_go = 15;}
+
+        time_for_move = (time / moves_to_go) + (inc * 8 / 10);
+
+        if (time_for_move >= time) {time_for_move = time / 2; }
 
         info->stoptime = info->starttime + time_for_move;
 
