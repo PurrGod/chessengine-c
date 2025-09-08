@@ -56,7 +56,7 @@ static void score_and_sort(moveList * list, Bitboards * bb, int hash_move){
             int attack_idx = (attack_piece - 1) % 6;
 
             // add score to capture struct
-            moves_score[i] = mvv_lva[victim_idx][attack_idx];
+            moves_score[i] = mvv_lva[victim_idx][attack_idx] + 10000;
         } else {
             moves_score[i] = 0; // quiet move score is 0
         }
@@ -94,11 +94,11 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
 
 
     // 1. Probe the TT for the current position.
-    int best_move_found = 0;
     int original_alpha = alpha;
     TT_entry *tt_entry = probe_TT(bb->posKey);
-
-
+    
+    int hash_move = (tt_entry != NULL) ? tt_entry->b_move : 0;
+    
     // 2. Check for a TT Cutoff if the entry is valid and deep enough.
     if (tt_entry != NULL) {
         if (tt_entry->depth >= depth){
@@ -112,13 +112,12 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
                 return tt_entry->score;
             }
         }
-
-        best_move_found = tt_entry->b_move;
+        
     }
-
+    
     if (depth == 0) {info->nodes++; return evaluate(bb);}
-
-    int hash_move = (tt_entry != NULL) ? tt_entry->b_move : 0;
+    
+    int best_move_found = 0;
 
     // generate all pl moves
     moveList list;
@@ -153,14 +152,13 @@ int negamaxab(Bitboards * bb, int alpha, int beta, int depth, SearchInfo * info)
                 continue;
             }
 
-
             if (i == 0) {
                 // full search for the first move (hash move)
                 score = -negamaxab(bb, -beta, -alpha, depth - 1, info);
             } else {
                 score = -negamaxab(bb, -(alpha + 1), -alpha, depth - 1, info);
 
-                if (score > alpha && score < beta) {
+                if (score > alpha) {
                     score = -negamaxab(bb, -beta, -alpha, depth - 1, info);
                 }
 
@@ -240,6 +238,10 @@ void search_position(Bitboards *bb, SearchInfo *info) {
             unmake_move(bb);
         }
 
+        if (pv_length > 0) {
+            best_move = pvArray[0];
+        }
+
         long time_spent = get_time_ms() - info->starttime;
         printf("info score cp %d depth %d nodes %llu time %ld pv ",
                bb->side == WHITE ? best_score : -best_score,
@@ -254,11 +256,6 @@ void search_position(Bitboards *bb, SearchInfo *info) {
         printf("\n");
         fflush(stdout);
 
-    }
-
-    TT_entry * rootEntry = probe_TT(bb->posKey);
-    if (rootEntry != NULL) {
-        best_move = rootEntry->b_move;
     }
 
     printf("bestmove ");
