@@ -11,6 +11,7 @@
 #include "hashtable.h"
 #include "perft.h"
 #include "uci.h"
+#include "evaluate.h"
 
 #define DEFAULT_HASH_SIZE 64
 
@@ -24,6 +25,7 @@ int main() {
     
     Bitboards board;
     SearchInfo info;
+    init_passed_pawns_masks();
     initialize_bitboards(&board); // Initialize to starting position
     init_hashtable(DEFAULT_HASH_SIZE);
     // iwroteprintbitboard(board.queens[BLACK] | board.queens[WHITE]);

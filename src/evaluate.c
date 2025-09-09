@@ -171,6 +171,35 @@ static const int *eg_pst_tables[6] = {
     eg_PawnPST, eg_KnightPST, eg_BishopPST, eg_RookPST, eg_QueenPST, eg_king_pst
 };
 
+U64 white_pp_masks[64];
+U64 black_pp_masks[64];
+
+void init_passed_pawns_masks() {
+    for (int sq = 0; sq < 64; sq++) {
+        white_pp_masks[sq] = 0ULL;
+        black_pp_masks[sq] = 0ULL;
+        int file = sq % 8;
+        int rank = sq / 8;
+
+        // White passed pawn mask
+        for (int r = rank + 1; r < 8; r++) {
+            // Add the square in front
+            setbit(white_pp_masks[sq], r * 8 + file);
+            // Add adjacent files
+            if (file > 0) setbit(white_pp_masks[sq], r * 8 + (file - 1));
+            if (file < 7) setbit(white_pp_masks[sq], r * 8 + (file + 1));
+        }
+
+        // Black passed pawn mask
+        for (int r = rank - 1; r >= 0; r--) {
+            setbit(black_pp_masks[sq], r * 8 + file);
+            if (file > 0) setbit(black_pp_masks[sq], r * 8 + (file - 1));
+            if (file < 7) setbit(black_pp_masks[sq], r * 8 + (file + 1));
+        }
+    }
+}
+
+
 int evaluate(Bitboards * bb) {
 	int mg_score = 0;
 	int eg_score = 0;
