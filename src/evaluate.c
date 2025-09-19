@@ -174,6 +174,8 @@ static const int *eg_pst_tables[6] = {
 U64 white_pp_masks[64];
 U64 black_pp_masks[64];
 
+static const int pp_bonus[8] = {0, 10, 20, 40, 70, 100, 200, 0};
+
 void init_passed_pawns_masks() {
     for (int sq = 0; sq < 64; sq++) {
         white_pp_masks[sq] = 0ULL;
@@ -199,21 +201,18 @@ void init_passed_pawns_masks() {
     }
 }
 
-
 int evaluate(Bitboards * bb) {
 	int mg_score = 0;
 	int eg_score = 0;
 	int gamephase = 0;
 	int score = 0;
 
-	// FIX: Loop must include the Black King (<= bKing)
 	for (int piece = wPawn; piece <= bKing; piece++) {
 		U64 piece_bb = *get_piece_bitboard(bb, piece);
 		while (piece_bb) {
 			int sq;
 			popabit(&piece_bb, &sq);
 
-			// FIX: Correctly map piece enum to 0-indexed array
 			// (wPawn=1 -> 0), (wKnight=2 -> 1), ..., (bKing=12 -> 5)
 			int pieceType = (piece - 1) % 6;
 			int color = (piece < bPawn) ? WHITE : BLACK;
@@ -227,6 +226,25 @@ int evaluate(Bitboards * bb) {
 				eg_score -= eg_piece_val[pieceType] + eg_pst_tables[pieceType][63 - sq];
 			}
 
+			// check for passed pawn
+			if (piece == wPawn) {
+				if ((white_pp_masks[sq] & bb->pawns[BLACK]) == 0) {
+					int rank = sq / 8;
+					int bonus = pp_bonus[rank];
+
+					mg_score += bonus;
+					eg_score += bonus;
+				}
+			} else if (piece == bPawn) {
+				if ((black_pp_masks[sq] & bb->pawns[WHITE]) == 0) {
+					int rank = 7 - (sq / 8);
+					int bonus = pp_bonus[rank];
+
+					mg_score -= bonus;
+					eg_score -= bonus;
+				}
+			}
+
 			gamephase += game_phase_inc[pieceType];
 		}
 	}
@@ -234,9 +252,9 @@ int evaluate(Bitboards * bb) {
     // Clamp gamephase to a max of 24
     if (gamephase > 24) gamephase = 24;
 
-	// Correct tapered eval formula (addition, not multiplication)
+	// tapered eval formula
 	score = ((mg_score * gamephase) + (eg_score * (24 - gamephase))) / 24;
 
-    // Return score from the perspective of the side to move
+    // score from the perspective of the side to move
 	return (bb->side == WHITE) ? score : -score;
 }
