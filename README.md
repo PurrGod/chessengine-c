@@ -2,7 +2,6 @@
 
 Dvaita is a **UCI-compliant chess engine** written from scratch in C. It is designed for performance, featuring a **bitboard board representation** and an efficient **alpha-beta search algorithm**. The engine is built with a modular architecture to allow for continuous development and the integration of more advanced search and evaluation techniques.
 
-*(Here you can add a screenshot or GIF of your engine playing in a GUI like Arena)*
 
 ---
 
