@@ -276,3 +276,10 @@ int evaluate(Bitboards * bb) {
     // score from the perspective of the side to move
 	return (bb->side == WHITE) ? score : -score;
 }
+
+// add evaluation for pawn structures, penalty for doubled pawns
+// bonuses for chained pawns and a huge bonus for passed pawns (done)
+
+// add a king safety eval function (eval_king)
+// checks for king safety, pawn shield, and castle bonus
+// penalty for open file next to the king (and operations)
