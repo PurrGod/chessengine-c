@@ -1,6 +1,7 @@
 #include "definitions.h"
 #include "evaluate.h"
 #include <math.h>
+#include <stdlib.h>
 
 // piece square tables
 static const int mg_PawnPST[64] = {
@@ -175,6 +176,23 @@ U64 white_pp_masks[64];
 U64 black_pp_masks[64];
 
 static const int pp_bonus[8] = {0, 10, 20, 40, 70, 100, 200, 0};
+
+// manhattan distance between squares (pieces)
+static int grid_dist(int to_sq, int from_sq) {
+    // rank -> y
+    // file -> x
+
+    int to_y = to_sq / 7;
+    int to_x = to_sq % 7;
+
+    int from_y = from_sq / 7;
+    int from_x = from_sq % 7;
+
+    // manhattan distance -> |x1 - x2| + |y1 = y2|
+    int dist = abs((to_x - from_x)) + abs((to_y - from_y));
+
+    return dist;
+}
 
 void init_passed_pawns_masks() {
     for (int sq = 0; sq < 64; sq++) {
