@@ -39,13 +39,11 @@ Dvaita is a **UCI-compliant chess engine** written from scratch in C. It is desi
 
 Planned features to significantly increase the engine’s playing strength:
 
-- **Quiescence Search**: Improve tactical accuracy and mitigate horizon effect.  
-- **Transposition Table**: Memory for search, reducing redundant calculations and increasing depth.  
-- **Advanced Move Ordering**:  
-  - Hash Move: Prioritize the best move from the transposition table.  
-  - Killer Moves: Remember quiet moves that have caused cutoffs.  
-- **Opening Book**: Provide instant, theory-backed moves for the opening.  
-- **Multithreading**: Parallelized search leveraging multi-core CPUs.  
+-   **Null Move Pruning**: A search pruning technique to quickly discard unpromising moves.
+-   **Static Exchange Evaluation (SEE)**: To identify bad captures and improve move ordering.
+-   **History Heuristics**: A move ordering improvement that prioritizes moves that have been successful in other parts of the search.
+-   **Opening Book**: Provide instant, theory-backed moves for the opening.
+-   **Multithreading**: Parallelized search leveraging multi-core CPUs.
 
 ---
 
